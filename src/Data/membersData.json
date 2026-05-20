@@ -1,0 +1,34 @@
+[
+  {
+    "id": "MEM-834192",
+    "name": "Rian Wijaya",
+    "email": "rian.wijaya@example.com",
+    "phone": "081234567890",
+    "points": 150,
+    "joinedAt": "10/05/2025"
+  },
+  {
+    "id": "MEM-294810",
+    "name": "Siti Aminah",
+    "email": "siti.aminah@example.com",
+    "phone": "085712345678",
+    "points": 45,
+    "joinedAt": "12/08/2025"
+  },
+  {
+    "id": "MEM-740129",
+    "name": "Budi Santoso",
+    "email": "budi.san@example.com",
+    "phone": "082198765432",
+    "points": 320,
+    "joinedAt": "02/01/2026"
+  },
+  {
+    "id": "MEM-519384",
+    "name": "Amelia Putri",
+    "email": "amel.putri@example.com",
+    "phone": "081933445566",
+    "points": 10,
+    "joinedAt": "15/03/2026"
+  }
+]
