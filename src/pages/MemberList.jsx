@@ -1,19 +1,63 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import dummyMembers from '../data/membersData.json'; // Import data JSON dummy
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom'; // 1. TAMBAHKAN Link DI SINI
+import axios from 'axios';
 
 function MemberList() {
   const navigate = useNavigate();
-  const [members] = useState(dummyMembers);
-  const [searchTerm, setSearchTerm] = useState('');
+  
+  // State Utama
+  const [members, setMembers] = useState([]); 
+  const [filteredMembers, setFilteredMembers] = useState([]); 
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(''); 
 
-  // Fitur pencarian sederhana berdasarkan nama atau ID
-  const filteredMembers = members.filter(member => 
-    member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // 1. useEffect Pertama: Ambil data awal
+  useEffect(() => {
+    axios
+      .get("https://dummyjson.com/users?limit=50")
+      .then((response) => {
+        if (response.status !== 200) {
+          setError(response.data.message);
+          return;
+        }
 
-  // Fungsi untuk mengarahkan ke halaman detail dengan query string (simulasi hasil scan QR)
+        const formattedMembers = response.data.users.map((user) => ({
+          id: `MEM-${user.id}0${user.age}`,
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          phone: user.phone,
+          points: user.age * 10,
+          joinedAt: "10/05/2025"
+        }));
+        
+        setMembers(formattedMembers);
+        setFilteredMembers(formattedMembers); 
+      })
+      .catch((err) => {
+        setError(err.message || "An unknown error occurred");
+      });
+  }, []);
+
+  // 2. useEffect Kedua: Debounce Search
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const query = searchTerm.toLowerCase();
+      
+      const hasilFilter = members.filter((member) => {
+        return (
+          member.name.toLowerCase().includes(query) ||
+          member.id.toLowerCase().includes(query) ||
+          member.email.toLowerCase().includes(query) ||
+          member.phone.includes(query)
+        );
+      });
+
+      setFilteredMembers(hasilFilter);
+    }, 500); 
+
+    return () => clearTimeout(timeout);
+  }, [searchTerm, members]); 
+
   const handleViewDetail = (member) => {
     navigate(`/member-detail?id=${member.id}&name=${encodeURIComponent(member.name)}&points=${member.points}&phone=${member.phone}`);
   };
@@ -27,11 +71,17 @@ function MemberList() {
         </div>
       </div>
 
+      {error && (
+        <div className="mb-5 p-4 bg-red-100 text-red-700 rounded-lg text-sm">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
+
       {/* Search Form */}
       <div className="mb-5 max-w-md">
         <input
           type="text"
-          placeholder="Cari berdasarkan nama atau ID Member..."
+          placeholder="Cari berdasarkan nama, ID, email, atau telepon..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="form-input w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-800 dark:text-gray-100"
@@ -44,13 +94,12 @@ function MemberList() {
           <h2 className="font-semibold text-gray-800 dark:text-gray-100">Semua Member ({filteredMembers.length})</h2>
         </header>
         <div className="p-3">
-          {/* Table container */}
           <div className="overflow-x-auto">
             <table className="table-auto w-full dark:text-gray-300">
-              {/* Table header */}
               <thead className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50">
                 <tr>
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">ID Member</div></th>
+                  {/* KEMBALIKAN BAGIAN INI MENJADI TEKS HEADER BIASA */}
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Nama</div></th>
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Email</div></th>
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">No. Telepon</div></th>
@@ -59,7 +108,6 @@ function MemberList() {
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-center">Aksi</div></th>
                 </tr>
               </thead>
-              {/* Table body */}
               <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700">
                 {filteredMembers.length > 0 ? (
                   filteredMembers.map(member => (
@@ -67,8 +115,16 @@ function MemberList() {
                       <td className="p-2 whitespace-nowrap">
                         <div className="font-mono font-medium text-gray-800 dark:text-gray-100">{member.id}</div>
                       </td>
+                      {/* PINDAHKAN LINK KE SINI (Tempat variabel 'member' bisa dibaca) */}
                       <td className="p-2 whitespace-nowrap">
-                        <div className="font-medium text-gray-800 dark:text-gray-100">{member.name}</div>
+                        <div className="font-medium">
+                          <Link 
+                            to={`/member-detail?id=${member.id}&name=${encodeURIComponent(member.name)}&points=${member.points}&phone=${member.phone}`} 
+                            className="text-emerald-400 hover:text-emerald-500 transition-colors"
+                          >
+                            {member.name}
+                          </Link>
+                        </div>
                       </td>
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-left">{member.email}</div>
@@ -96,7 +152,9 @@ function MemberList() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="p-4 text-center text-gray-400">Tidak ada data member ditemukan.</td>
+                    <td colSpan="7" className="p-4 text-center text-gray-400">
+                      Tidak ada data member ditemukan.
+                    </td>
                   </tr>
                 )}
               </tbody>

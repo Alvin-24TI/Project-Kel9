@@ -1,26 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Tambah useEffect di sini
+import dummyPromos from '../data/promoData.json';
 
 export default function PromoMembership() {
 
-  // DATA PROMO (DUMMY)
-  const [promoList, setPromoList] = useState([
-    {
-      id: 1,
-      nama: "Diskon 20%",
-      jenis: "Diskon",
-      target: "Gold",
-      periode: "01 Juni - 30 Juni 2024",
-      status: "Aktif",
-    },
-    {
-      id: 2,
-      nama: "Gratis Kopi",
-      jenis: "Reward",
-      target: "Silver",
-      periode: "05 Juni - 15 Juni 2024",
-      status: "Aktif",
-    },
-  ]);
+  // DATA PROMO 
+  const [promoList, setPromoList] = useState(dummyPromos); // State Master data asli
+  const [filteredPromos, setFilteredPromos] = useState(dummyPromos); // State data yang tampil di tabel
+  const [searchTerm, setSearchTerm] = useState(''); // State penampung text input pencarian
 
   // FORM INPUT
   const [formData, setFormData] = useState({
@@ -29,6 +15,31 @@ export default function PromoMembership() {
     target: "",
     periode: "",
   });
+
+  // ==========================================
+  // LOGIKA UTAMA: DEBOUNCE SEARCH (TANPA AXIOS)
+  // ==========================================
+  useEffect(() => {
+    // Beri jeda 500ms sebelum menyaring data secara lokal
+    const timeout = setTimeout(() => {
+      const query = searchTerm.toLowerCase();
+
+      const hasilFilter = promoList.filter((promo) => {
+        return (
+          promo.nama.toLowerCase().includes(query) ||
+          promo.jenis.toLowerCase().includes(query) ||
+          promo.target.toLowerCase().includes(query) ||
+          promo.periode.toLowerCase().includes(query)
+        );
+      });
+
+      setFilteredPromos(hasilFilter);
+    }, 500); // 500ms debounce
+
+    // Cleanup function: Membatalkan proses filter jika user mengetik huruf baru sebelum 500ms
+    return () => clearTimeout(timeout);
+  }, [searchTerm, promoList]); // Berjalan otomatis jika ketikan search atau data master berubah
+  // ==========================================
 
   // HANDLE INPUT
   const handleChange = (e) => {
@@ -47,12 +58,15 @@ export default function PromoMembership() {
       return;
     }
 
+    const maxId = promoList.length > 0 ? Math.max(...promoList.map(p => p.id)) : 0;
+
     const promoBaru = {
-      id: promoList.length + 1,
+      id: maxId + 1,
       ...formData,
       status: "Aktif",
     };
 
+    // Tambah ke data master (useEffect di atas akan otomatis memperbarui filteredPromos)
     setPromoList([...promoList, promoBaru]);
     alert("Promo berhasil ditambahkan!");
 
@@ -97,6 +111,17 @@ export default function PromoMembership() {
             <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
               Promo Membership
             </h1>
+          </div>
+
+          {/* INPUT BAR SEARCH (Tambahan agar fungsi input berjalan rapi) */}
+          <div className="mb-6 max-w-md">
+            <input
+              type="text"
+              placeholder="Cari promo berdasarkan nama, jenis, target..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="form-input w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-800 dark:text-gray-100 shadow-sm"
+            />
           </div>
 
           <div className="grid grid-cols-12 gap-6">
@@ -189,7 +214,8 @@ export default function PromoMembership() {
             <div className="col-span-full lg:col-span-7 bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700">
               <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
                 <h2 className="font-semibold text-gray-800 dark:text-gray-100">
-                  Daftar Promo Aktif ({promoList.length})
+                  {/* Total data dinamis mengikuti filteredPromos */}
+                  Daftar Promo Aktif ({filteredPromos.length})
                 </h2>
               </header>
               <div className="p-3">
@@ -206,49 +232,55 @@ export default function PromoMembership() {
                       </tr>
                     </thead>
                     <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700">
-                      {promoList.map((promo) => (
-                        <tr key={promo.id}>
-                          <td className="p-2 whitespace-nowrap">
-                            <div className="font-medium text-gray-800 dark:text-gray-100">{promo.nama}</div>
-                          </td>
-                          <td className="p-2 whitespace-nowrap">
-                            <div>{promo.jenis}</div>
-                          </td>
-                          <td className="p-2 whitespace-nowrap">
-                            <div className="text-violet-500 font-medium">{promo.target}</div>
-                          </td>
-                          <td className="p-2 whitespace-nowrap">
-                            <div className="text-gray-500 text-xs">{promo.periode}</div>
-                          </td>
-                          <td className="p-2 whitespace-nowrap">
-                            <span
-                              className={`inline-flex font-medium text-xs rounded-full px-2.5 py-0.5 ${
-                                promo.status === "Aktif"
-                                  ? "bg-green-500/20 text-green-700 dark:text-green-400"
-                                  : "bg-red-500/20 text-red-700 dark:text-red-400"
-                              }`}
-                            >
-                              {promo.status}
-                            </span>
-                          </td>
-                          <td className="p-2 whitespace-nowrap">
-                            <div className="flex gap-2 justify-center">
-                              <button
-                                onClick={() => toggleStatus(promo.id)}
-                                className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 font-medium py-1 px-2.5 rounded transition-colors"
+                      {filteredPromos.length > 0 ? (
+                        filteredPromos.map((promo) => (
+                          <tr key={promo.id}>
+                            <td className="p-2 whitespace-nowrap">
+                              <div className="font-medium text-gray-800 dark:text-gray-100">{promo.nama}</div>
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              <div>{promo.jenis}</div>
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              <div className="text-violet-500 font-medium">{promo.target}</div>
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              <div className="text-gray-500 text-xs">{promo.periode}</div>
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              <span
+                                className={`inline-flex font-medium text-xs rounded-full px-2.5 py-0.5 ${
+                                  promo.status === "Aktif"
+                                    ? "bg-green-500/20 text-green-700 dark:text-green-400"
+                                    : "bg-red-500/20 text-red-700 dark:text-red-400"
+                                }`}
                               >
-                                Toggle
-                              </button>
-                              <button
-                                onClick={() => hapusPromo(promo.id)}
-                                className="text-xs bg-red-500/10 hover:bg-red-500 text-red-600 hover:text-white font-medium py-1 px-2.5 rounded transition-colors"
-                              >
-                                Hapus
-                              </button>
-                            </div>
-                          </td>
+                                {promo.status}
+                              </span>
+                            </td>
+                            <td className="p-2 whitespace-nowrap">
+                              <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={() => toggleStatus(promo.id)}
+                                  className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 font-medium py-1 px-2.5 rounded transition-colors"
+                                >
+                                  Toggle
+                                </button>
+                                <button
+                                  onClick={() => hapusPromo(promo.id)}
+                                  className="text-xs bg-red-500/10 hover:bg-red-500 text-red-600 hover:text-white font-medium py-1 px-2.5 rounded transition-colors"
+                                >
+                                  Hapus
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="6" className="p-4 text-center text-gray-400">Tidak ada data promo tersedia.</td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>

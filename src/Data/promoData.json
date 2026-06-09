@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "nama": "Diskon 20%",
+    "jenis": "Diskon",
+    "target": "Gold",
+    "periode": "01 Juni - 30 Juni 2024",
+    "status": "Aktif"
+  },
+  {
+    "id": 2,
+    "nama": "Gratis Kopi",
+    "jenis": "Reward",
+    "target": "Silver",
+    "periode": "05 Juni - 15 Juni 2024",
+    "status": "Aktif"
+  },
+  {
+    "id": 3,
+    "nama": "Voucher Cashback Rp50.000",
+    "jenis": "Cashback",
+    "target": "Gold",
+    "periode": "01 Juli - 31 Juli 2024",
+    "status": "Mendatang"
+  },
+  {
+    "id": 4,
+    "nama": "Gratis Ongkir Instan",
+    "jenis": "Reward",
+    "target": "Silver",
+    "periode": "10 Mei - 20 Mei 2024",
+    "status": "Berakhir"
+  }
+]

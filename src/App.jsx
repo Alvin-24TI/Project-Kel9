@@ -17,6 +17,7 @@ const Analytics = React.lazy(() => import("./pages/Analytics"));
 const Login = React.lazy(() => import("./pages/auth/Login"));
 const Register = React.lazy(() => import("./pages/auth/Register"));
 const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
+const memberDetail = React.lazy(() => import("./pages/MemberDetail"));
 
 function App() {
   const location = useLocation();
@@ -36,6 +37,7 @@ function App() {
         <Route path="/register-member" element={<RegisterMember />} />
         <Route path="/member-detail" element={<MemberDetail />} />
         <Route path="/promo-membership" element={<PromoMembership />} />
+        <Route path="/memberlist/:nama" element={<MemberDetail />} />
         
       </Route>
       <Route element={<AuthLayout />}>
@@ -44,6 +46,8 @@ function App() {
         <Route path="forgot" element={<Forgot />} />
       </Route>
     </Routes>
+
+
   );
 }
 
