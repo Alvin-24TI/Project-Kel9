@@ -4,59 +4,40 @@ import axios from 'axios';
 
 function MemberList() {
   const navigate = useNavigate();
-  
+
   // State Utama
-  const [members, setMembers] = useState([]); 
-  const [filteredMembers, setFilteredMembers] = useState([]); 
+  const [members, setMembers] = useState([]);
+  const [filteredMembers, setFilteredMembers] = useState([]);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(''); 
+  const [searchTerm, setSearchTerm] = useState('');
 
   // 1. useEffect Pertama: Ambil data awal
   useEffect(() => {
-    axios
-      .get("https://dummyjson.com/users?limit=50")
-      .then((response) => {
-        if (response.status !== 200) {
-          setError(response.data.message);
-          return;
-        }
-
-        const formattedMembers = response.data.users.map((user) => ({
-          id: `MEM-${user.id}0${user.age}`,
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          phone: user.phone,
-          points: user.age * 10,
-          joinedAt: "10/05/2025"
-        }));
-        
-        setMembers(formattedMembers);
-        setFilteredMembers(formattedMembers); 
-      })
-      .catch((err) => {
-        setError(err.message || "An unknown error occurred");
-      });
-  }, []);
-
-  // 2. useEffect Kedua: Debounce Search
-  useEffect(() => {
     const timeout = setTimeout(() => {
-      const query = searchTerm.toLowerCase();
-      
-      const hasilFilter = members.filter((member) => {
-        return (
-          member.name.toLowerCase().includes(query) ||
-          member.id.toLowerCase().includes(query) ||
-          member.email.toLowerCase().includes(query) ||
-          member.phone.includes(query)
-        );
-      });
+      axios
+        .get(`https://dummyjson.com/users/search?q=${searchTerm}`)
+        .then((response) => {
 
-      setFilteredMembers(hasilFilter);
-    }, 500); 
+          const formattedMembers = response.data.users.map((user) => ({
+            id: `MEM-${user.id}0${user.age}`,
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            phone: user.phone,
+            points: user.age * 10,
+            joinedAt: "10/05/2025",
+          }));
+
+          setFilteredMembers(formattedMembers);
+        })
+        .catch((err) => {
+          setError(err.message);
+        });
+
+    }, 500);
 
     return () => clearTimeout(timeout);
-  }, [searchTerm, members]); 
+
+  }, [searchTerm]);
 
   const handleViewDetail = (member) => {
     navigate(`/member-detail?id=${member.id}&name=${encodeURIComponent(member.name)}&points=${member.points}&phone=${member.phone}`);
@@ -118,8 +99,8 @@ function MemberList() {
                       {/* PINDAHKAN LINK KE SINI (Tempat variabel 'member' bisa dibaca) */}
                       <td className="p-2 whitespace-nowrap">
                         <div className="font-medium">
-                          <Link 
-                            to={`/member-detail?id=${member.id}&name=${encodeURIComponent(member.name)}&points=${member.points}&phone=${member.phone}`} 
+                          <Link
+                            to={`/member-detail?id=${member.id}&name=${encodeURIComponent(member.name)}&points=${member.points}&phone=${member.phone}`}
                             className="text-emerald-400 hover:text-emerald-500 transition-colors"
                           >
                             {member.name}
