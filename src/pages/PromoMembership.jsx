@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'; // Tambah useEffect di sini
-import dummyPromos from '../data/promoData.json';
+import dummyPromos from '../Data/promoData.json';
 
 export default function PromoMembership() {
 
