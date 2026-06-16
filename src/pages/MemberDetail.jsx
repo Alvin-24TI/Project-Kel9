@@ -83,7 +83,26 @@ function MemberDetail() {
 
         {/* Panel Aksi Kasir / Admin */}
         <div className="col-span-full lg:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Aksi Transaksi Kasir</h3>
+          {/* Header Panel dengan Grup Tombol Aksi */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Aksi Transaksi Kasir</h3>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {/* Tombol Baru: Input Transaksi Member (di sebelah kiri) */}
+              <Link 
+                to="/input-transaksi-member" 
+                className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors shadow-xs whitespace-nowrap"
+              >
+                Input Transaksi Member
+              </Link>
+              {/* Tombol: Cek Transaksi Member */}
+              <Link 
+                to="/transaksi-member" 
+                className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors shadow-xs whitespace-nowrap"
+              >
+                Cek Transaksi Member
+              </Link>
+            </div>
+          </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {/* Form Tambah Poin */}

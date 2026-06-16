@@ -10,6 +10,8 @@ import RegisterMember from './pages/RegisterMember';
 import MemberDetail from './pages/MemberDetail';
 import MemberList from './pages/MemberList';
 import PromoMembership from './pages/PromoMembership';
+import InputTransaksiMember from './pages/InputTransaksiMember';
+import TransaksiMember from './pages/TransaksiMember';
 
 
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
@@ -18,6 +20,8 @@ const Login = React.lazy(() => import("./pages/auth/Login"));
 const Register = React.lazy(() => import("./pages/auth/Register"));
 const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
 const memberDetail = React.lazy(() => import("./pages/MemberDetail"));
+const inputTransaksiMember = React.lazy(() => import("./pages/InputTransaksiMember"));
+const transaksiMember = React.lazy(() => import("./pages/TransaksiMember"));
 
 function App() {
   const location = useLocation();
@@ -38,7 +42,8 @@ function App() {
         <Route path="/member-detail" element={<MemberDetail />} />
         <Route path="/promo-membership" element={<PromoMembership />} />
         <Route path="/memberlist/:nama" element={<MemberDetail />} />
-        
+        <Route path="/input-transaksi-member" element={<InputTransaksiMember />} />
+        <Route path="/transaksi-member" element={<TransaksiMember />} />
       </Route>
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />

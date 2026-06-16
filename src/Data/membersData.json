@@ -1,82 +1,27 @@
 [
   {
-    "id": "MEM-834192",
-    "name": "Rian Wijaya",
-    "email": "rian.wijaya@example.com",
-    "phone": "081234567890",
+    "id": "MEM-001",
+    "name": "Syauqi Rahman",
+    "email": "syauqi24ti@mahasiswa.pcr.ac.id",
+    "phone": "087714892728",
     "points": 150,
-    "joinedAt": "10/05/2025"
+    "joinedAt": "11/05/2025"
   },
   {
-    "id": "MEM-294810",
-    "name": "Siti Aminah",
-    "email": "siti.aminah@example.com",
+    "id": "MEM-002",
+    "name": "Alvin Zikrianda",
+    "email": "alvin24ti@mahasiswa.pcr.ac.id",
     "phone": "085712345678",
     "points": 45,
     "joinedAt": "12/08/2025"
   },
   {
-    "id": "MEM-740129",
-    "name": "Budi Santoso",
-    "email": "budi.san@example.com",
+    "id": "MEM-003",
+    "name": "Novrizal",
+    "email": "novrizal24ti@mahasiswa.pcr.ac.id",
     "phone": "082198765432",
     "points": 320,
     "joinedAt": "02/01/2026"
-  },
-  {
-    "id": "MEM-519384",
-    "name": "Amelia Putri",
-    "email": "amel.putri@example.com",
-    "phone": "081933445566",
-    "points": 10,
-    "joinedAt": "15/03/2026"
-  },
-  {
-    "id": "MEM-631024",
-    "name": "Deni Setiawan",
-    "email": "deni.setiawan@example.com",
-    "phone": "081344556677",
-    "points": 210,
-    "joinedAt": "20/03/2026"
-  },
-  {
-    "id": "MEM-159483",
-    "name": "Eka Lestari",
-    "email": "eka.lestari@example.com",
-    "phone": "087811223344",
-    "points": 85,
-    "joinedAt": "02/04/2026"
-  },
-  {
-    "id": "MEM-382910",
-    "name": "Fahmi Hidayat",
-    "email": "fahmi.h@example.com",
-    "phone": "085299887766",
-    "points": 430,
-    "joinedAt": "18/04/2026"
-  },
-  {
-    "id": "MEM-920481",
-    "name": "Gita Permata",
-    "email": "gita.p@example.com",
-    "phone": "081122334455",
-    "points": 55,
-    "joinedAt": "05/05/2026"
-  },
-  {
-    "id": "MEM-473821",
-    "name": "Hendra Wijaya",
-    "email": "hendra.w@example.com",
-    "phone": "082355667788",
-    "points": 175,
-    "joinedAt": "22/05/2026"
-  },
-  {
-    "id": "MEM-582914",
-    "name": "Indah Sari",
-    "email": "indah.sari@example.com",
-    "phone": "089677889900",
-    "points": 0,
-    "joinedAt": "01/06/2026"
   }
+
 ]
