@@ -1,123 +1,87 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { supabase } from '../lib/supabaseClient';
 
-function TransactionList() {
-  // State Utama
+function TransaksiMember() {
   const [transactions, setTransactions] = useState([]);
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
-  // useEffect untuk simulasi fetch data dari DummyJSON (memanfaatkan data carts/posts sebagai dummy transaksi)
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      // Menggunakan data posts dummyjson untuk disimulasikan sebagai riwayat produk transaksi
-      axios
-        .get(`https://dummyjson.com/posts/search?q=${searchTerm}`)
-        .then((response) => {
-          const formattedTransactions = response.data.posts.map((post, index) => {
-            // Membuat variasi ID & Data berdasar indeks data dummy
-            const dummyIdNum = post.id + 120;
-            const dummyMemberNum = (post.userId * 3) + 10;
-            
-            return {
-              id: `TX-${dummyIdNum}0${index}`,
-              memberId: `MEM-${dummyMemberNum}0${post.userId + 20}`,
-              // Menggunakan potongan title post sebagai nama produk & nama member tiruan
-              memberName: post.id % 2 === 0 ? 'Poki Ganteng' : `User Dummy ${post.userId}`,
-              productName: post.title.split(' ').slice(0, 3).join(' '), // Mengambil 3 kata pertama
-              transactionDate: `1${post.id % 9}/06/2026`, // Simulasi tanggal di tahun 2026
-            };
-          });
+    async function fetchTransactions() {
+      try {
+        // Mengambil riwayat transaksi sekalian join dengan tabel members untuk mendapatkan kolom nama
+        const { data, error: fetchError } = await supabase
+          .from('transactions')
+          .select(`
+            id,
+            amount,
+            points_earned,
+            created_at,
+            members ( name )
+          `)
+          .order('created_at', { ascending: false });
 
-          setFilteredTransactions(formattedTransactions);
-        })
-        .catch((err) => {
-          setError(err.message);
-        });
-    }, 500);
+        if (fetchError) throw fetchError;
+        setTransactions(data || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    return () => clearTimeout(timeout);
-  }, [searchTerm]);
+    fetchTransactions();
+  }, []);
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-      {/* Page header */}
       <div className="sm:flex sm:justify-between sm:items-center mb-8">
-        <div className="mb-4 sm:mb-0">
-          <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Riwayat Transaksi Member</h1>
-        </div>
+        <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Riwayat Transaksi Membership</h1>
       </div>
 
-      {error && (
-        <div className="mb-5 p-4 bg-red-100 text-red-700 rounded-lg text-sm">
-          <strong>Error:</strong> {error}
-        </div>
-      )}
+      {error && <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg text-sm">{error}</div>}
 
-      {/* Search Form */}
-      <div className="mb-5 max-w-md">
-        <input
-          type="text"
-          placeholder="Cari transaksi berdasarkan nama, ID, atau produk..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="form-input w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-emerald-500"
-        />
-      </div>
-
-      {/* Table */}
       <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700">
         <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-          <h2 className="font-semibold text-gray-800 dark:text-gray-100">Semua Transaksi ({filteredTransactions.length})</h2>
+          <h2 className="font-semibold text-gray-800 dark:text-gray-100">Log Aktivitas Kasir ({transactions.length})</h2>
         </header>
-        <div className="p-3">
-          <div className="overflow-x-auto">
-            <table className="table-auto w-full dark:text-gray-300">
-              <thead className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50">
-                <tr>
-                  <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">ID Transaksi</div></th>
-                  <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">ID Member</div></th>
-                  <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Nama Member</div></th>
-                  <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Produk</div></th>
-                  <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Tanggal Transaksi</div></th>
-                </tr>
-              </thead>
-              <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700">
-                {filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                      <td className="p-2 whitespace-nowrap">
-                        <div className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{tx.id}</div>
-                      </td>
-                      <td className="p-2 whitespace-nowrap">
-                        <div className="font-mono font-medium text-gray-800 dark:text-gray-100">{tx.memberId}</div>
-                      </td>
-                      <td className="p-2 whitespace-nowrap">
-                        <div className="font-medium text-gray-800 dark:text-gray-100">{tx.memberName}</div>
-                      </td>
-                      <td className="p-2 whitespace-nowrap">
-                        <div className="text-left font-medium text-gray-700 dark:text-gray-300">{tx.productName}</div>
-                      </td>
-                      <td className="p-2 whitespace-nowrap">
-                        <div className="text-left text-gray-500 dark:text-gray-400">{tx.transactionDate}</div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="p-4 text-center text-gray-400 dark:text-gray-500">
-                      Tidak ada data transaksi ditemukan.
+        <div className="p-3 overflow-x-auto">
+          <table className="table-auto w-full dark:text-gray-300">
+            <thead className="text-xs font-semibold uppercase text-gray-400 bg-gray-50 dark:bg-gray-700/50">
+              <tr>
+                <th className="p-2 whitespace-nowrap text-left">ID Transaksi</th>
+                <th className="p-2 whitespace-nowrap text-left">Nama Member</th>
+                <th className="p-2 whitespace-nowrap text-left">Total Belanja</th>
+                <th className="p-2 whitespace-nowrap text-left">Poin Masuk</th>
+                <th className="p-2 whitespace-nowrap text-left">Waktu</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700">
+              {loading ? (
+                <tr><td colSpan="5" className="p-4 text-center text-gray-400">Memuat log dari cloud...</td></tr>
+              ) : transactions.length > 0 ? (
+                transactions.map((tx) => (
+                  <tr key={tx.id}>
+                    <td className="p-2 font-mono text-xs">{tx.id}</td>
+                    <td className="p-2 font-medium">{tx.members?.name || 'Member Terhapus'}</td>
+                    <td className="p-2 text-emerald-600 dark:text-emerald-400 font-medium">
+                      Rp {tx.amount.toLocaleString('id-ID')}
+                    </td>
+                    <td className="p-2 font-bold text-yellow-500">+{tx.points_earned} Pts</td>
+                    <td className="p-2 text-gray-500">
+                      {new Date(tx.created_at).toLocaleString('id-ID')}
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              ) : (
+                <tr><td colSpan="5" className="p-4 text-center text-gray-400">Belum ada riwayat transaksi masuk.</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
 }
 
-export default TransactionList;
+export default TransaksiMember;

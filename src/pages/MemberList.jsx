@@ -1,44 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // 1. TAMBAHKAN Link DI SINI
-import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient'; // Pastikan path ke client Supabase sudah benar
 
 function MemberList() {
   const navigate = useNavigate();
 
   // State Utama
-  const [members, setMembers] = useState([]);
   const [filteredMembers, setFilteredMembers] = useState([]);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // 1. useEffect Pertama: Ambil data awal
+  // useEffect untuk mengambil data secara dinamis dari Supabase
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      axios
-        .get(`https://dummyjson.com/users/search?q=${searchTerm}`)
-        .then((response) => {
+    setLoading(true);
 
-          const formattedMembers = response.data.users.map((user) => ({
-            id: `MEM-${user.id}0${user.age}`,
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            phone: user.phone,
-            points: user.age * 10,
-            joinedAt: "10/05/2025",
-          }));
+    const timeout = setTimeout(async () => {
+      try {
+        // Ambil query data dari tabel 'members'
+        let query = supabase
+          .from('members')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-          setFilteredMembers(formattedMembers);
-        })
-        .catch((err) => {
-          setError(err.message);
-        });
+        // Fitur Pencarian: Jika user mengetik, filter berdasarkan kolom 'name' di database
+        if (searchTerm.trim() !== '') {
+          query = query.ilike('name', `%${searchTerm}%`);
+        }
 
-    }, 500);
+        const { data, error: supabaseError } = await query;
+
+        if (supabaseError) {
+          throw new Error(supabaseError.message);
+        }
+
+        setFilteredMembers(data || []);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }, 500); // Debounce 500ms untuk menghemat kuota request ke database
 
     return () => clearTimeout(timeout);
-
   }, [searchTerm]);
 
+  // Fungsi tombol navigasi detail via query params
   const handleViewDetail = (member) => {
     navigate(`/member-detail?id=${member.id}&name=${encodeURIComponent(member.name)}&points=${member.points}&phone=${member.phone}`);
   };
@@ -52,78 +60,100 @@ function MemberList() {
         </div>
       </div>
 
+      {/* Tampilan Error jika database bermasalah */}
       {error && (
         <div className="mb-5 p-4 bg-red-100 text-red-700 rounded-lg text-sm">
           <strong>Error:</strong> {error}
         </div>
       )}
 
-      {/* Search Form */}
+      {/* Input Form Pencarian */}
       <div className="mb-5 max-w-md">
         <input
           type="text"
-          placeholder="Cari berdasarkan nama, ID, email, atau telepon..."
+          placeholder="Cari berdasarkan nama..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="form-input w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-800 dark:text-gray-100"
+          className="form-input w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-800 dark:text-gray-100 placeholder-gray-400 focus:border-emerald-500 focus:ring-0"
         />
       </div>
 
-      {/* Table */}
+      {/* Wadah Tabel (Card Container) */}
       <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-200 dark:border-gray-700">
         <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
-          <h2 className="font-semibold text-gray-800 dark:text-gray-100">Semua Member ({filteredMembers.length})</h2>
+          <h2 className="font-semibold text-gray-800 dark:text-gray-100">
+            Semua Member ({filteredMembers.length})
+          </h2>
         </header>
         <div className="p-3">
           <div className="overflow-x-auto">
             <table className="table-auto w-full dark:text-gray-300">
+              {/* Header Tabel */}
               <thead className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50">
                 <tr>
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">ID Member</div></th>
-                  {/* KEMBALIKAN BAGIAN INI MENJADI TEKS HEADER BIASA */}
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Nama</div></th>
-                  <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Email</div></th>
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">No. Telepon</div></th>
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Poin</div></th>
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Tgl Bergabung</div></th>
                   <th className="p-2 whitespace-nowrap"><div className="font-semibold text-center">Aksi</div></th>
                 </tr>
               </thead>
+              
+              {/* Isi Badan Tabel */}
               <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700">
-                {filteredMembers.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" className="p-4 text-center text-gray-400 animate-pulse">
+                      Menghubungkan ke cloud database...
+                    </td>
+                  </tr>
+                ) : filteredMembers.length > 0 ? (
                   filteredMembers.map(member => (
-                    <tr key={member.id}>
+                    <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors">
+                      {/* ID Member (UUID dari Supabase) */}
                       <td className="p-2 whitespace-nowrap">
-                        <div className="font-mono font-medium text-gray-800 dark:text-gray-100">{member.id}</div>
+                        <div className="font-mono font-medium text-gray-800 dark:text-gray-100 text-xs truncate max-w-[120px]" title={member.id}>
+                          {member.id}
+                        </div>
                       </td>
-                      {/* PINDAHKAN LINK KE SINI (Tempat variabel 'member' bisa dibaca) */}
+                      {/* Nama Member (Bisa diklik sebagai link alternatif) */}
                       <td className="p-2 whitespace-nowrap">
                         <div className="font-medium">
                           <Link
                             to={`/member-detail?id=${member.id}&name=${encodeURIComponent(member.name)}&points=${member.points}&phone=${member.phone}`}
-                            className="text-emerald-400 hover:text-emerald-500 transition-colors"
+                            className="text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 font-semibold transition-colors"
                           >
                             {member.name}
                           </Link>
                         </div>
                       </td>
+                      {/* Nomor Telepon */}
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-left">{member.email}</div>
+                        <div className="text-left font-medium text-gray-600 dark:text-gray-400">{member.phone}</div>
                       </td>
+                      {/* Poin Member */}
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-left font-medium">{member.phone}</div>
+                        <div className="text-left font-bold text-amber-600 dark:text-amber-400">
+                          {member.points} Pts
+                        </div>
                       </td>
+                      {/* Tanggal Bergabung */}
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-left font-bold text-yellow-600 dark:text-yellow-400">{member.points} Pts</div>
+                        <div className="text-left text-gray-500 dark:text-gray-400">
+                          {new Date(member.created_at).toLocaleDateString('id-ID', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                          })}
+                        </div>
                       </td>
-                      <td className="p-2 whitespace-nowrap">
-                        <div className="text-left text-gray-500">{member.joinedAt}</div>
-                      </td>
+                      {/* Kolom Tombol Aksi */}
                       <td className="p-2 whitespace-nowrap">
                         <div className="text-center">
                           <button
                             onClick={() => handleViewDetail(member)}
-                            className="text-xs bg-violet-500 hover:bg-violet-600 text-white font-medium py-1.5 px-3 rounded-lg transition-colors"
+                            className="text-xs bg-violet-500 hover:bg-violet-600 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-colors"
                           >
                             Lihat QR / Detail
                           </button>
@@ -133,8 +163,8 @@ function MemberList() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7" className="p-4 text-center text-gray-400">
-                      Tidak ada data member ditemukan.
+                    <td colSpan="6" className="p-4 text-center text-gray-400 dark:text-gray-500">
+                      Tidak ada data member di dalam database.
                     </td>
                   </tr>
                 )}
