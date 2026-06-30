@@ -15,25 +15,25 @@ function RegisterMember() {
   };
   // ==============================================================
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setUiMessage(null);
 
-    // 1. PETAKAN DATA: Nama properti di kiri wajib sama persis dengan kolom Supabase
     const dataKeSupabase = {
-      name: formData.nama,       // Menuju kolom 'name'
-      phone: formData.telepon,   // Menuju kolom 'phone'
-      email: formData.email,     // Menuju kolom 'email' (Kolom Baru)
-      username: formData.username, // Menuju kolom 'username' (Kolom Baru)
-      password: formData.password, // Menuju kolom 'password' (Kolom Baru)
-      points: 0                  // Menuju kolom 'points' (Bawaan skema Anda)
+      name: formData.nama,       
+      phone: formData.telepon,   
+      email: formData.email,     
+      username: formData.username, 
+      password: formData.password, 
+      points: 0                  
     };
 
-    // 2. Simpan objek yang sudah dipetakan ke Supabase
-    const { data, error } = await supabase
+    // 1. Simpan ke Supabase dan minta Supabase mengembalikan data yang baru masuk (.select())
+    const { data: insertedData, error } = await supabase
       .from('members')
-      .insert([dataKeSupabase]);
+      .insert([dataKeSupabase])
+      .select(); // PENTING: Agar kita bisa mendapatkan ID otomatis dari database
 
     if (error) {
       setUiMessage({ type: 'error', text: "Gagal mendaftarkan member: " + error.message });
@@ -41,10 +41,15 @@ function RegisterMember() {
       return;
     }
 
-    // 3. Jika sukses, buat Link QR Code otomatis menggunakan API pihak ketiga
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://kopikel9.com/memberlist/${formData.username}`;
+    // Ambil ID member yang baru saja dibuat oleh Supabase
+    const newMemberId = insertedData[0]?.id;
 
-    // 4. Siapkan parameter template untuk dikirim ke EmailJS
+    // 2. Buat Link QR Code BARU menggunakan format Query Parameters
+    // Menggunakan encodeURIComponent agar spasi pada nama (seperti %20) aman dibaca URL
+    const targetUrl = `https://kopikel9.com/member-detail?id=${newMemberId}&name=${encodeURIComponent(formData.nama)}&points=0&phone=${formData.telepon}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(targetUrl)}`;
+
+    // 3. Siapkan parameter template untuk dikirim ke EmailJS
     const templateParams = {
       to_name: formData.nama,
       to_email: formData.email,
@@ -53,7 +58,7 @@ function RegisterMember() {
       qr_code_link: qrCodeUrl
     };
 
-    // 5. Kirim email secara real-time
+    // 4. Kirim email secara real-time
     emailjs.send(
       'service_zmqs5y2',
       'template_sftfc4d',
@@ -62,7 +67,6 @@ function RegisterMember() {
     )
       .then((response) => {
         setUiMessage({ type: 'success', text: `Member ${formData.nama} berhasil didaftarkan & info akun telah dikirim ke email!` });
-        // Reset form setelah berhasil
         setFormData({ nama: '', email: '', username: '', password: '', telepon: '' });
         setLoading(false);
       }, (err) => {
