@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import Home from './pages/Home';
 
 import "./css/style.css";
 import "./charts/ChartjsConfig";
@@ -35,6 +36,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
+      <Route path="/home" element={<Home />} />
         <Route index element={<Dashboard />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="/member-list" element={<MemberList />} />
