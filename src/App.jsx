@@ -35,8 +35,9 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
       <Route path="/home" element={<Home />} />
+
+      <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="/member-list" element={<MemberList />} />
@@ -47,6 +48,7 @@ function App() {
         <Route path="/input-transaksi-member" element={<InputTransaksiMember />} />
         <Route path="/transaksi-member" element={<TransaksiMember />} />
       </Route>
+      
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />

@@ -1,101 +1,189 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SobremesaImg from '../assets/Sobremessa2.png';
 
 function Home() {
+  const [activeTab, setActiveTab] = useState('home');
   const navigate = useNavigate();
 
+  // Data Menu Contoh ala Kopi Kenangan
+  const menus = [
+    { id: 1, name: 'Kopi Kenangan Mantan', price: 'Rp 18.000', desc: 'Perpaduan espresso espresso berkualitas dengan susu segar dan gula aren asli.' },
+    { id: 2, name: 'Dual Shot Iced Shaken', price: 'Rp 22.000', desc: 'Double shot espresso yang dikocok hingga menghasilkan tekstur foam yang lembut.' },
+    { id: 3, name: 'Milo Dinosaur Coffee', price: 'Rp 24.000', desc: 'Sensasi manisnya cokelat Milo berpadu dengan espresso shot yang mantap.' },
+    { id: 4, name: 'Caramel Macchiato', price: 'Rp 26.000', desc: 'Espresso dengan susu hangat, sirup vanilla, dan siraman saus caramel di atasnya.' },
+  ];
+
   return (
-    <div 
-      className="min-h-screen w-full flex flex-col justify-between items-center relative bg-cover bg-center bg-no-repeat font-sans px-4 select-none"
-      style={{ backgroundImage: `url(${SobremesaImg})` }}
-    >
-      {/* Overlay Gelap Transparan agar Kontras */}
-      <div className="absolute inset-0 bg-slate-950/60 dark:bg-slate-950/70 backdrop-blur-[2px] z-0"></div>
-
-      {/* 1. HEADER BRANDING & NAVIGASI MINI PELANGGAN */}
-      <header className="relative z-10 w-full max-w-7xl pt-8 flex justify-between items-center border-b border-white/10 pb-4">
-        <span className="text-xl font-black tracking-widest text-white uppercase">
-          SOBREMESA <span className="text-xs font-normal text-amber-400 block sm:inline sm:ml-2">MEMBER AREA</span>
-        </span>
-        <button 
-          onClick={() => navigate('/login?role=manager')}
-          className="text-[11px] text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg border border-white/10"
-        >
-          Staff Portal 💼
-        </button>
-      </header>
-
-      {/* 2. AREA KARTU UTAMA: PORTAL MEMBER & PENUKARAN BENEFIT */}
-      <main className="relative z-10 w-full max-w-md my-auto">
-        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl border border-white/20 text-center space-y-6">
-          
-          <div className="space-y-1">
-            <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-              E-Membership Portal
-            </h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Kumpulkan poin belanjaan Anda dan klaim keuntungan produk gratis
-            </p>
+    <div className="min-h-screen bg-stone-50 text-stone-800 font-sans antialiased selection:bg-amber-700 selection:text-white">
+      {/* HEADER / NAVIGATION BAR */}
+      <nav className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-stone-200 z-50">
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+          {/* Logo / Brand */}
+          <div className="text-xl font-bold tracking-tight text-amber-900 cursor-pointer" onClick={() => setActiveTab('home')}>
+            ☕ Kopi Kelompok 9
           </div>
 
-          {/* PILIHAN MENU EKSKLUSIF PELANGGAN */}
-          <div className="space-y-3 pt-2">
-            
-            {/* Akses Masuk ke Profil Member (Cek Poin & Barcode QR) */}
-            <button
-              onClick={() => navigate('/login?role=member')}
-              className="w-full flex items-center justify-between p-4 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md transition-all group active:scale-[0.98]"
-            >
-              <div className="flex items-center space-x-3 text-left">
-                <span className="text-xl">💳</span>
-                <div>
-                  <h3 className="text-sm">Masuk ke Akun Member</h3>
-                  <p className="text-[10px] text-amber-100 font-normal">Cek saldo poin & scan barcode QR</p>
-                </div>
-              </div>
-              <span className="text-xs opacity-80 group-hover:translate-x-1 transition-transform">➔</span>
-            </button>
-
-            {/* Akses Cek Promo / Katalog Hadiah Penukaran Poin */}
-            <button
-              onClick={() => navigate('/promo-membership')}
-              className="w-full flex items-center justify-between p-4 bg-slate-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold rounded-xl border border-gray-200 dark:border-gray-700 transition-all group active:scale-[0.98]"
-            >
-              <div className="flex items-center space-x-3 text-left">
-                <span className="text-xl">🎁</span>
-                <div>
-                  <h3 className="text-sm text-gray-900 dark:text-white">Lihat Katalog Promo</h3>
-                  <p className="text-[10px] text-gray-400 font-normal">Daftar reward roti & kopi gratis berjalan</p>
-                </div>
-              </div>
-              <span className="text-xs opacity-60 group-hover:translate-x-1 transition-transform">➔</span>
-            </button>
-
+          {/* Tab Navigation Buttons */}
+          <div className="flex space-x-1 sm:space-x-4">
+            {['home', 'menu', 'member'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-sm font-medium capitalize transition-all duration-200 rounded-full ${
+                  activeTab === tab
+                    ? 'bg-amber-900 text-white shadow-sm'
+                    : 'text-stone-500 hover:text-stone-900 hover:bg-stone-100'
+                }`}
+              >
+                {tab === 'home' ? 'Beranda' : tab}
+              </button>
+            ))}
           </div>
-
-          {/* LINK REGISTRASI MANDIRI MANDAL */}
-          <div className="pt-2 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
-            Belum bergabung menjadi bagian dari kami?{' '}
-            <button 
-              onClick={() => navigate('/register-member')}
-              className="text-amber-500 font-bold hover:underline"
-            >
-              Daftar Member Baru
-            </button>
-          </div>
-
         </div>
+      </nav>
+
+      {/* RENDER KONTEN BERDASARKAN TAB YANG AKTIF */}
+      <main className="max-w-4xl mx-auto px-6 py-12">
+        
+        {/* TAB 1: HOME (PERKENALAN USAHA) */}
+        {activeTab === 'home' && (
+          <div className="space-y-16 animate-fadeIn">
+            {/* Hero Section */}
+            <div className="flex flex-col md:flex-row items-center gap-8 py-4">
+              <div className="flex-1 space-y-6">
+                <span className="text-amber-800 font-semibold tracking-wider text-sm uppercase">Welcome to Our Brew</span>
+                <h1 className="text-4xl md:text-5xl font-extrabold text-stone-900 tracking-tight leading-tight">
+                  Dari Hati, <br />
+                  Untuk Pecinta Kopi.
+                </h1>
+                <p className="text-stone-600 leading-relaxed text-base md:text-lg">
+                  Kami percaya bahwa segelas kopi berkualitas tidak harus mahal. Menggunakan biji kopi pilihan nusantara yang dipanggang dengan presisi, kami menghadirkan cita rasa otentik ke setiap cangkir Anda setiap hari.
+                </p>
+                <div className="pt-2">
+                  <button 
+                    onClick={() => setActiveTab('menu')}
+                    className="bg-amber-950 text-white px-6 py-3 rounded-lg text-sm font-medium shadow-md hover:bg-amber-900 transition-colors"
+                  >
+                    Lihat Menu Kami
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 w-full max-w-sm aspect-square bg-gradient-to-tr from-amber-900 to-amber-700 rounded-2xl flex items-center justify-center p-8 text-white shadow-xl relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                <div className="text-center space-y-2 z-10">
+                  <span className="text-6xl block">☕</span>
+                  <p className="font-serif italic text-xl">"Freshly brewed memories."</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Visi Singkat Minimalis */}
+            <div className="border-t border-stone-200 pt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="space-y-2">
+                <h3 className="font-bold text-stone-900 text-lg">100% Biji Lokal</h3>
+                <p className="text-stone-600 text-sm leading-relaxed">Mendukung penuh petani lokal Indonesia untuk menghasilkan cita rasa terbaik.</p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-bold text-stone-900 text-lg">Dibuat Segar</h3>
+                <p className="text-stone-600 text-sm leading-relaxed">Setiap cangkir baru akan digiling dan diseduh setelah pesanan Anda masuk.</p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-bold text-stone-900 text-lg">Harga Bersahabat</h3>
+                <p className="text-stone-600 text-sm leading-relaxed">Menikmati kopi kualitas premium tanpa perlu merogoh kocek terlalu dalam.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: MENU YANG TERSEDIA */}
+        {activeTab === 'menu' && (
+          <div className="space-y-8 animate-fadeIn">
+            <div className="text-center space-y-2 max-w-md mx-auto">
+              <h2 className="text-3xl font-bold text-stone-900">Menu Pilihan</h2>
+              <p className="text-stone-500 text-sm">Temukan perpaduan rasa yang pas untuk menemani produktivitas atau waktu santai Anda.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+              {menus.map((item) => (
+                <div key={item.id} className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm flex flex-col justify-between hover:border-amber-700/30 hover:shadow-md transition-all">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold text-stone-900 text-base">{item.name}</h4>
+                      <span className="text-amber-800 font-semibold text-sm whitespace-nowrap bg-amber-50 px-2.5 py-1 rounded-md">{item.price}</span>
+                    </div>
+                    <p className="text-stone-600 text-xs md:text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                  <div className="pt-4 mt-auto">
+                    <button 
+                      onClick={() => setActiveTab('member')}
+                      className="text-xs text-amber-900 font-semibold hover:text-amber-700 underline underline-offset-4"
+                    >
+                      Beli dengan harga member?
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: MEMBER BENEFITS & CTA */}
+        {activeTab === 'member' && (
+          <div className="space-y-12 max-w-2xl mx-auto animate-fadeIn">
+            <div className="text-center space-y-2">
+              <span className="text-xs font-bold tracking-widest uppercase text-amber-800">Exclusive Circle</span>
+              <h2 className="text-3xl font-bold text-stone-900">Kenapa Harus Jadi Member?</h2>
+              <p className="text-stone-500 text-sm">Dapatkan berbagai keuntungan langsung sejak cangkir pertama Anda.</p>
+            </div>
+
+            {/* List Alasan / Keuntungan */}
+            <div className="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 space-y-6 shadow-sm">
+              <div className="flex gap-4 items-start">
+                <div className="bg-amber-100 text-amber-900 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 text-sm">1</div>
+                <div>
+                  <h4 className="font-bold text-stone-900 text-sm sm:text-base">Diskon Langsung 10% Setiap Pembelian</h4>
+                  <p className="text-stone-600 text-xs sm:text-sm mt-0.5">Potongan harga otomatis berlaku untuk seluruh menu minuman tanpa syarat minimum transaksi.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start border-t border-stone-100 pt-6">
+                <div className="bg-amber-100 text-amber-900 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 text-sm">2</div>
+                <div>
+                  <h4 className="font-bold text-stone-900 text-sm sm:text-base">Kumpulkan Poin Rewards</h4>
+                  <p className="text-stone-600 text-xs sm:text-sm mt-0.5">Tukarkan akumulasi poin belanja Anda dengan produk gratis pilihan atau merchandise eksklusif.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 items-start border-t border-stone-100 pt-6">
+                <div className="bg-amber-100 text-amber-900 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0 text-sm">3</div>
+                <div>
+                  <h4 className="font-bold text-stone-900 text-sm sm:text-base">Akses Awal Menu Baru & Promo Spesial</h4>
+                  <p className="text-stone-600 text-xs sm:text-sm mt-0.5">Jadilah yang pertama mencoba produk varian musiman (seasonal) kami sebelum dirilis ke publik.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Call to Action Button */}
+            <div className="text-center p-8 bg-amber-950 text-stone-100 rounded-2xl shadow-lg space-y-4">
+              <h3 className="text-xl font-bold">Siap Bergabung Bersama Kami?</h3>
+              <p className="text-amber-200/80 text-xs sm:text-sm max-w-sm mx-auto">Proses pendaftaran hanya memakan waktu 1 menit untuk menikmati semua keuntungannya.</p>
+              <div className="pt-2">
+                <button
+                  onClick={() => navigate('/register')}
+                  className="bg-white text-amber-950 font-semibold px-8 py-3 rounded-lg text-sm hover:bg-stone-100 transition-all shadow-md active:scale-95"
+                >
+                  Daftar Menjadi Member Sekarang
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* 3. FOOTER */}
-      <footer className="relative z-10 w-full max-w-7xl pb-8 flex flex-col sm:flex-row justify-between items-center text-[11px] text-gray-400 gap-2 text-center sm:text-left border-t border-white/5 pt-4">
-        <p>© 2026 Cafe & Bakery Sobremesa. All Rights Reserved.</p>
-        <p className="font-medium">
-          📍 Rumbai, Pekanbaru • ⏰ Open 09.00 - 22.00 WIB
-        </p>
+      {/* FOOTER MINIMALIS */}
+      <footer className="border-t border-stone-200 mt-20 py-8 bg-white text-center text-xs text-stone-400">
+        <p>&copy; {new Date().getFullYear()} Kopi Kelompok 9. All rights reserved.</p>
       </footer>
-
     </div>
   );
 }
