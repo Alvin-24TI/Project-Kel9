@@ -35,10 +35,10 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/home" element={<Home />} />
+      <Route path="/" element={<Home />} />
 
       <Route path="/" element={<Layout />}>
-        <Route index element={<Dashboard />} />
+       <Route path="dashboard" element={<Dashboard />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="/member-list" element={<MemberList />} />
         <Route path="/register-member" element={<RegisterMember />} />

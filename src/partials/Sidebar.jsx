@@ -81,7 +81,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
               <li>
                 <NavLink
                   end
-                  to="/"
+                  to="/dashboard"
                   className={({ isActive }) => linkClasses(isActive)}
                 >
                   <svg className="shrink-0 fill-current w-4 h-4 mr-3" viewBox="0 0 16 16">
