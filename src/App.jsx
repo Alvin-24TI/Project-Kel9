@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import Home from './pages/Home';
+import Home from './pages/home';
 
 import "./css/style.css";
 import "./charts/ChartjsConfig";
