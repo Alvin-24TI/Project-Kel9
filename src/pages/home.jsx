@@ -7,6 +7,24 @@ import produk2 from '../assets/ProdukUnggulan2.jpeg';
 import produk3 from '../assets/ProdukUnggulan3.png';
 import produk4 from '../assets/ProdukUnggulan4.png';
 
+const normalizeMemberData = (member) => {
+  if (!member) return null;
+
+  const resolvedName = member.nama || member.name || member.full_name || member.fullname || '';
+  const resolvedPhone = member.no_telepon || member.phone || member.telepon || '';
+  const resolvedPoints = member.total_poin ?? member.points ?? member.poin ?? member.totalPoints ?? 0;
+
+  return {
+    ...member,
+    nama: resolvedName,
+    name: member.name || resolvedName,
+    no_telepon: resolvedPhone,
+    phone: member.phone || resolvedPhone,
+    total_poin: resolvedPoints,
+    points: resolvedPoints,
+  };
+};
+
 function Home() {
   const [activeTab, setActiveTab] = useState('home');
   const navigate = useNavigate();
@@ -71,8 +89,8 @@ function Home() {
         return;
       }
 
-      // MENGGUNAKAN FUNGSI SETTER YANG BENAR AGAR TIDAK CRASH
-      setCurrentMember(data); 
+      const normalizedMember = normalizeMemberData(data);
+      setCurrentMember(normalizedMember);
     } catch (err) {
       console.error(err);
       setLoginError('Terjadi kesalahan jaringan ke database!');
@@ -320,20 +338,17 @@ function Home() {
                       <div className="space-y-6">
                         <div>
                           <span className="text-[11px] text-red-200 uppercase tracking-widest block mb-1">Nama Lengkap</span>
-                          {/* SUDAH DIUBAH KE .nama SESUAI STRUKTUR DATABASE */}
-                          <h3 className="text-2xl font-black tracking-wide text-white">{currentMember.nama}</h3>
+                          <h3 className="text-2xl font-black tracking-wide text-white">{currentMember.nama || currentMember.name || '-'}</h3>
                         </div>
 
                         <div className="grid grid-cols-2 gap-6 bg-black/20 p-4 rounded-xl border border-white/5">
                           <div>
                             <span className="text-[10px] text-red-200 uppercase tracking-widest block mb-0.5">No. Telepon</span>
-                            {/* SUDAH DIUBAH KE .no_telepon SESUAI STRUKTUR DATABASE */}
-                            <p className="text-base font-semibold tracking-medium text-red-50">{currentMember.no_telepon || '-'}</p>
+                            <p className="text-base font-semibold tracking-medium text-red-50">{currentMember.no_telepon || currentMember.phone || '-'}</p>
                           </div>
                           <div>
                             <span className="text-[10px] text-red-200 uppercase tracking-widest block mb-0.5">Akumulasi Poin</span>
-                            {/* SUDAH DIUBAH KE .total_poin SESUAI STRUKTUR DATABASE */}
-                            <p className="text-2xl font-black text-yellow-300">{currentMember.total_poin || 0} Poin</p>
+                            <p className="text-2xl font-black text-yellow-300">{currentMember.total_poin ?? currentMember.points ?? 0} Poin</p>
                           </div>
                         </div>
                       </div>
@@ -342,7 +357,7 @@ function Home() {
                         <div className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-amber-900/10">
                           <img 
                             /* LINK QR DIBERI PARAMETER YANG BENAR SESUAI VARIABEL DATABASE BARU */
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://kopikel9.com/member-detail?id=${currentMember.id}&name=${encodeURIComponent(currentMember.nama)}&points=${currentMember.total_poin}&phone=${currentMember.no_telepon}`)}`} 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://project-kel9.vercel.app/member-detail?id=${currentMember.id}&name=${encodeURIComponent(currentMember.nama || currentMember.name || '')}&points=${currentMember.total_poin ?? currentMember.points ?? 0}&phone=${currentMember.no_telepon || currentMember.phone || ''}`)}`} 
                             alt="QR Code Member"
                             className="w-44 h-44"
                           />

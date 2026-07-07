@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../lib/supabaseClient';
 
 function InputTransaksiMember() {
@@ -6,6 +7,66 @@ function InputTransaksiMember() {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
+  const [scannerActive, setScannerActive] = useState(false);
+  const [scannerError, setScannerError] = useState('');
+  const scannerRef = useRef(null);
+  const html5QrCodeRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (html5QrCodeRef.current) {
+        html5QrCodeRef.current.stop().catch(() => {});
+      }
+    };
+  }, []);
+
+  const startScanner = async () => {
+    if (!scannerRef.current) return;
+
+    setScannerError('');
+    setScannerActive(true);
+
+    try {
+      const html5QrCode = new Html5Qrcode("scanner-region");
+      html5QrCodeRef.current = html5QrCode;
+
+      await html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        (decodedText) => {
+          try {
+            const url = new URL(decodedText);
+            const scannedId = url.searchParams.get('id') || decodedText;
+            if (scannedId) {
+              setMemberId(scannedId);
+              setScannerActive(false);
+              html5QrCode.stop().catch(() => {});
+            }
+          } catch {
+            if (decodedText) {
+              setMemberId(decodedText);
+              setScannerActive(false);
+              html5QrCode.stop().catch(() => {});
+            }
+          }
+        },
+        () => {}
+      );
+    } catch (err) {
+      setScannerError('Tidak bisa mengakses kamera. Pastikan izin kamera sudah aktif.');
+      setScannerActive(false);
+    }
+  };
+
+  const stopScanner = async () => {
+    if (html5QrCodeRef.current) {
+      try {
+        await html5QrCodeRef.current.stop();
+      } catch {}
+    }
+    setScannerActive(false);
+    setScannerError('');
+  };
 
   const handleTransaction = async (e) => {
     e.preventDefault();
@@ -86,6 +147,41 @@ function InputTransaksiMember() {
               placeholder="Masukkan UUID Member"
               disabled={loading}
             />
+          </div>
+
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Scan QR Member</span>
+              {!scannerActive ? (
+                <button
+                  type="button"
+                  onClick={startScanner}
+                  className="text-xs bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg"
+                >
+                  Buka Kamera
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={stopScanner}
+                  className="text-xs bg-gray-700 hover:bg-gray-800 text-white px-3 py-1.5 rounded-lg"
+                >
+                  Stop
+                </button>
+              )}
+            </div>
+
+            {scannerActive ? (
+              <div ref={scannerRef} className="w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700">
+                <div id="scanner-region" className="w-full min-h-[240px] bg-black" />
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 dark:text-gray-400">Gunakan kamera untuk memindai QR code member dan ID akan otomatis terisi.</p>
+            )}
+
+            {scannerError && (
+              <p className="mt-2 text-xs text-red-600">{scannerError}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Total Belanja (Rupiah)</label>
