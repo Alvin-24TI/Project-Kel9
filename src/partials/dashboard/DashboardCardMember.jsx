@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import memberData from '../../data/membersData.json'; // Jalur data dummy JSON
+import memberData from '../../Data/temp-members.json'; // Jalur data dummy JSON
 
 function DashboardCardMember() {
   // Menghitung statistik dummy dari file JSON
