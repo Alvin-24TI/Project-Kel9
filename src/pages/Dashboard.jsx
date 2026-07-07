@@ -12,7 +12,7 @@ import DashboardCard11 from '../partials/dashboard/DashboardCard11';
 import DashboardCard12 from '../partials/dashboard/DashboardCard12';
 import DashboardCard13 from '../partials/dashboard/DashboardCard13';
 import DashboardCardMember from '../partials/dashboard/DashboardCardMember';
-import Banner from '../partials/Banner';
+
 
 function Dashboard() {
   return (
@@ -89,7 +89,7 @@ function Dashboard() {
 
       </div>
 
-      <Banner />
+     
     </div>
   );
 }

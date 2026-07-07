@@ -162,6 +162,21 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                 </NavLink>
               </li>
 
+              <li>
+                <NavLink
+                  to="/notification-management"
+                  className={({ isActive }) => linkClasses(isActive)}
+                >
+                  {/* Icon Tiket/Diskon */}
+                  <svg className="shrink-0 fill-current w-4 h-4 mr-3" viewBox="0 0 16 16">
+                    <path d="M14.5 2H1.5A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2Zm-1 9h-11v-7h11v7Z" />
+                    <circle cx="5" cy="7" r="1" />
+                    <path d="M7 6h4v1H7zM7 8h2v1H7z" />
+                  </svg>
+                  <span className="text-sm font-medium">Manajemen Notifikasi</span>
+                </NavLink>
+              </li>
+
             </ul>
           </div>
         </div>

@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import logoSobremesa from '../assets/Sobremesa.jpg';
+import produk1 from '../assets/ProdukUnggulan1.jpeg';
+import produk2 from '../assets/ProdukUnggulan2.jpeg';
+import produk3 from '../assets/ProdukUnggulan3.png';
+import produk4 from '../assets/ProdukUnggulan4.png';
 
 function Home() {
   const [activeTab, setActiveTab] = useState('home');
@@ -13,35 +17,31 @@ function Home() {
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Data Menu dengan properti image langsung ke folder assets
+  // Data Menu tanpa deskripsi
   const menus = [
     { 
       id: 1, 
-      name: 'Kopi Kenangan Mantan', 
+      name: 'Mont Blanc', 
       price: 'Rp 18.000', 
-      desc: 'Perpaduan espresso berkualitas dengan susu segar dan gula aren asli.',
-      image: '/src/assets/hero.png' // <-- Silakan ganti nama file gambar sesuai keinginan Anda
+      image: produk1 
     },
     { 
       id: 2, 
-      name: 'Dual Shot Iced Shaken', 
+      name: 'Sourdough Mozzarella Pepperoni', 
       price: 'Rp 22.000', 
-      desc: 'Double shot espresso yang dikocok hingga menghasilkan tekstur foam yang lembut.',
-      image: '/src/assets/hero.png' 
+      image: produk2 
     },
     { 
       id: 3, 
-      name: 'Milo Dinosaur Coffee', 
+      name: 'Citrus Berry', 
       price: 'Rp 24.000', 
-      desc: 'Sensasi manisnya cokelat Milo berpadu dengan espresso shot yang mantap.',
-      image: '/src/assets/hero.png' 
+      image: produk3 
     },
     { 
       id: 4, 
-      name: 'Caramel Macchiato', 
+      name: 'Matilda Chocolate Cake', 
       price: 'Rp 26.000', 
-      desc: 'Espresso dengan susu hangat, sirup vanilla, dan siraman saus caramel di atasnya.',
-      image: '/src/assets/hero.png' 
+      image: produk4 
     },
   ];
 
@@ -70,7 +70,7 @@ function Home() {
       return;
     }
 
-    setCurrentMember(data);
+    currentMember(data);
     setLoading(false);
   };
 
@@ -92,7 +92,7 @@ function Home() {
       <div>
         {/* HEADER / NAVIGATION BAR - FULL SCREEN */}
         <nav className="sticky top-0 bg-red-950/60 backdrop-blur-md border-b border-white/10 z-50 w-full">
-          <div className="w-full px-6 md:px-12 h-16 flex items-center justify-between">
+          <div className="w-full px-6 md:px-16 h-20 flex items-center justify-between">
             
             {/* BAGIAN LOGO & TULISAN */}
             <div 
@@ -102,23 +102,23 @@ function Home() {
               <img 
                 src={logoSobremesa} 
                 alt="Logo Sobremesa" 
-                className="w-10 h-10 rounded-full object-cover border border-white/20 shadow-md"
+                className="w-12 h-12 rounded-full object-cover border border-white/20 shadow-md"
               />
-              <div className="text-xl font-bold tracking-tight text-white">
-                Sobremessa
+              <div className="text-2xl font-black tracking-tight text-white">
+                Sobremesa
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-4">
               {/* Tab Navigation Buttons */}
-              <div className="flex space-x-1 sm:space-x-2">
+              <div className="flex space-x-2">
                 {['home', 'menu', 'member'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-2 text-sm font-medium capitalize transition-all duration-200 rounded-full ${
+                    className={`px-5 py-2.5 text-sm font-bold capitalize transition-all duration-200 rounded-full ${
                       activeTab === tab
-                        ? 'bg-white text-red-950 shadow-md font-bold'
+                        ? 'bg-white text-red-950 shadow-md'
                         : 'text-red-100 hover:text-white hover:bg-white/10'
                     }`}
                   >
@@ -130,7 +130,7 @@ function Home() {
               {/* Portal Masuk Khusus Staf / Kasir */}
               <button
                 onClick={() => navigate('/login')}
-                className="border border-white/30 text-red-100 hover:text-white hover:bg-white/10 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                className="border border-white/30 text-red-100 hover:text-white hover:bg-white/10 px-4 py-2 rounded-xl text-xs font-bold transition-colors"
               >
                 Portal Staf
               </button>
@@ -139,88 +139,113 @@ function Home() {
         </nav>
 
         {/* AREA KONTEN UTAMA */}
-        <main className="w-full h-auto min-h-[calc(100vh-8rem)] px-6 md:px-12 py-12 bg-amber-950/75 backdrop-blur-sm">
+        <main className="w-full h-auto min-h-[calc(100vh-9rem)] px-6 md:px-16 py-16 bg-amber-950/75 backdrop-blur-sm flex items-center justify-center">
             
-          {/* TAB 1: HOME */}
+          {/* TAB 1: HOME (DIBUAT RAKSASA DAN MEMENUHI LAYOUT HAMPIR 100%) */}
           {activeTab === 'home' && (
-            <div className="space-y-16 animate-fadeIn w-full">
-              <div className="flex flex-col lg:flex-row items-center gap-12 py-4">
-                <div className="flex-1 space-y-6">
-                  <span className="text-red-400 font-semibold tracking-wider text-sm uppercase">Welcome to Our Brew</span>
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight">
+            <div className="animate-fadeIn w-full max-w-[1600px] mx-auto py-6">
+              <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+                
+                {/* BLOK TEKS SEBELAH KIRI (FONT DI-UPGRADE KE UKURAN GIANT) */}
+                <div className="flex-[1.2] space-y-8 text-left">
+                  <span className="text-red-400 font-bold tracking-widest text-base uppercase bg-red-950/40 border border-red-500/20 px-4 py-1.5 rounded-full w-fit block">
+                    Welcome to Our Brew
+                  </span>
+                  
+                  {/* Judul Beranda Diperbesar Menjadi Ultra-Raksasa */}
+                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[1.05] drop-shadow-md">
                     Dari Hati, <br />
-                    Untuk Pecinta Kopi.
+                    Untuk Pecinta <br />
+                    Kopi dan roti.
                   </h1>
-                  <p className="text-red-100/90 leading-relaxed text-base md:text-lg max-w-2xl">
-                    Kami percaya bahwa segelas kopi berkualitas tidak harus mahal. Menggunakan biji kopi pilihan nusantara yang dipanggang dengan presisi, kami menghadirkan cita rasa otentik ke setiap cangkir Anda setiap hari.
+                  
+                  {/* Teks Deskripsi Diperbesar Lebih Nyaman Dibaca */}
+                  <p className="text-red-100/95 leading-relaxed text-lg md:text-xl max-w-3xl font-medium antialiased">
+                    "Kami percaya bahwa kebahagiaan sejati dimulai dari aroma kopi yang segar dan kehangatan roti yang baru matang. Memadukan biji kopi pilihan nusantara dengan panggangan pastry otentik buatan tangan, kami menghadirkan perpaduan rasa sempurna untuk melengkapi setiap cerita hari Anda."
                   </p>
-                  <div className="pt-2">
+                  
+                  <div className="pt-4">
                     <button 
                       onClick={() => setActiveTab('menu')}
-                      className="bg-white text-red-950 font-bold px-8 py-3.5 rounded-lg text-sm shadow-lg hover:bg-red-100 transition-colors"
+                      className="bg-white text-red-950 font-black px-10 py-4 rounded-xl text-base shadow-2xl hover:bg-red-100 transition-all duration-200 transform hover:scale-105 active:scale-95"
                     >
                       Lihat Menu Kami
                     </button>
                   </div>
                 </div>
-                <div className="flex-1 w-full max-w-md aspect-square bg-gradient-to-tr from-red-600/80 to-red-500/80 backdrop-blur-sm border border-white/20 rounded-2xl flex items-center justify-center p-8 text-white shadow-2xl relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                  <div className="text-center space-y-2 z-10">
-                    <span className="text-7xl block">☕</span>
-                    <p className="font-serif italic text-2xl">"Freshly brewed memories."</p>
+
+                {/* BLOK VISUAL SEBELAH KANAN (KOTAK GAMBAR DIBESARKAN MAKSIMAL) */}
+                <div 
+                  className="flex-1 w-full max-w-xl lg:max-w-2xl aspect-square bg-cover bg-center border-2 border-white/20 rounded-3xl flex items-center justify-center p-12 text-white shadow-2xl relative overflow-hidden group transition-all duration-300"
+                  style={{ 
+                    backgroundImage: `linear-gradient(to top, rgba(127, 29, 29, 0.95), rgba(0, 0, 0, 0.25)), url(${produk2})` 
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1.5px,transparent_1.5px)] [background-size:24px_24px]"></div>
+                  
+                  {/* Konten Di Dalam Kotak Disesuaikan Ukurannya */}
+                  <div className="text-center space-y-4 z-10 drop-shadow-[0_10px_10px_rgba(0,0,0,0.7)]">
+                    <span className="text-8xl md:text-9xl block transform group-hover:scale-110 transition-transform duration-500 select-none animate-pulse">
+                      🥐
+                    </span>
+                    <p className="font-serif italic text-3xl md:text-4xl font-black tracking-wide">
+                      "Freshly baked memories."
+                    </p>
                   </div>
                 </div>
+
               </div>
             </div>
           )}
 
           {/* TAB 2: MENU */}
           {activeTab === 'menu' && (
-            <div className="space-y-8 animate-fadeIn w-full">
-              <div className="text-center space-y-2 max-w-md mx-auto">
-                <h2 className="text-3xl font-bold text-white">Produk Unggulan</h2>
-                <p className="text-red-200 text-sm">Temukan perpaduan rasa yang pas untuk menemani produktivitas atau waktu santai Anda.</p>
+            <div className="space-y-10 animate-fadeIn w-full max-w-7xl mx-auto px-2">
+              <div className="text-center space-y-3 max-w-xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Produk Unggulan</h2>
+                <p className="text-red-200 text-sm md:text-base opacity-90">
+                  Temukan perpaduan rasa yang pas untuk menemani produktivitas atau waktu santai Anda.
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10 pt-6">
                 {menus.map((item) => (
-                  <div key={item.id} className="bg-red-950/40 backdrop-blur-md rounded-xl border border-white/10 shadow-lg flex flex-col justify-between overflow-hidden hover:border-white/30 hover:shadow-xl transition-all">
-                    
-                    {/* AREA TEMPAT GAMBAR PRODUK */}
-                    <div className="w-full aspect-[4/3] bg-black/40 relative overflow-hidden border-b border-white/5">
+                  <div 
+                    key={item.id} 
+                    className="bg-red-950/40 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl flex flex-col justify-between overflow-hidden hover:border-white/30 hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1"
+                  >
+                    <div className="w-full aspect-[16/10] bg-black/40 relative overflow-hidden border-b border-white/5">
                       <img 
                         src={item.image} 
                         alt={item.name} 
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
-                          // Pengaman otomatis jika jalurnya salah/tidak ada gambar, diganti icon kopi
                           e.target.onerror = null; 
                           e.target.style.display = 'none';
                         }}
                       />
-                      {/* Badge Harga Mengambang di Atas Kanan Gambar */}
-                      <span className="absolute top-3 right-3 text-red-950 font-bold text-xs bg-white px-2.5 py-1 rounded-md shadow-md z-10">
+                      <span className="absolute top-4 right-4 text-red-950 font-black text-sm bg-white px-3.5 py-1.5 rounded-lg shadow-xl z-10 tracking-wide">
                         {item.price}
                       </span>
                     </div>
 
-                    {/* KONTEN TEKS NAMA MENU DI BAWAH GAMBAR */}
-                    <div className="p-5 flex flex-col justify-between flex-1 space-y-3">
-                      <div className="space-y-1.5">
-                        <h4 className="font-bold text-white text-base leading-snug">{item.name}</h4>
-                        <p className="text-red-200/80 text-xs md:text-sm leading-relaxed">{item.desc}</p>
+                    <div className="p-6 md:p-8 flex flex-col justify-between flex-1 space-y-6">
+                      <div>
+                        <h4 className="font-black text-white text-2xl md:text-3xl tracking-tight leading-tight drop-shadow-sm">
+                          {item.name}
+                        </h4>
                       </div>
                       
-                      <div className="pt-2">
+                      <div className="pt-2 Bird-t border-white/5 flex items-center justify-between">
                         <button 
                           onClick={() => setActiveTab('member')}
-                          className="text-xs text-red-300 font-semibold hover:text-white underline underline-offset-4"
+                          className="text-sm text-red-300 font-bold hover:text-white underline underline-offset-4 transition-colors"
                         >
                           Beli dengan harga member?
                         </button>
+                        <span className="text-xl opacity-40">🥐</span>
                       </div>
                     </div>
-
                   </div>
                 ))}
               </div>
@@ -229,93 +254,92 @@ function Home() {
 
           {/* TAB 3: MEMBER (CEK DATA & POIN MEMBER) */}
           {activeTab === 'member' && (
-            <div className="w-full animate-fadeIn">
-              <div className="max-w-md mx-auto">
+            <div className="w-full animate-fadeIn flex justify-center py-4">
+              <div className="w-full max-w-xl mx-auto">
                 
-                {/* KONDISI A: JIKA MEMBER BELUM LOGIN */}
                 {!currentMember ? (
-                  <div className="bg-red-950/50 backdrop-blur-md rounded-2xl border border-white/10 p-6 sm:p-8 shadow-2xl space-y-6">
-                    <div className="text-center space-y-1">
-                      <h2 className="text-2xl font-bold text-white">Area Informasi Member</h2>
-                      <p className="text-red-200 text-xs sm:text-sm">Silakan masukkan username & password untuk melihat koleksi poin Anda.</p>
+                  <div className="bg-red-950/50 backdrop-blur-md rounded-2xl border border-white/10 p-8 sm:p-10 shadow-2xl space-y-8">
+                    <div className="text-center space-y-2">
+                      <h2 className="text-3xl font-extrabold text-white tracking-tight">Area Informasi Member</h2>
+                      <p className="text-red-200 text-sm">Silakan masukkan username & password untuk melihat koleksi poin Anda.</p>
                     </div>
 
                     {loginError && (
-                      <div className="p-3 text-xs bg-white text-red-700 border border-red-300 rounded-lg text-center font-bold">
+                      <div className="p-3.5 text-sm bg-white text-red-700 border border-red-300 rounded-lg text-center font-bold shadow-sm">
                         {loginError}
                       </div>
                     )}
 
-                    <form onSubmit={handleMemberLogin} className="space-y-4">
+                    <form onSubmit={handleMemberLogin} className="space-y-5">
                       <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wider text-red-200 mb-1">Username Member</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-red-200 mb-1.5">Username Member</label>
                         <input 
                           type="text" 
                           name="username"
                           value={loginData.username}
                           onChange={handleLoginChange}
                           placeholder="Masukkan username Anda"
-                          className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-white bg-black/40 text-white placeholder-white/30"
+                          className="w-full border border-white/10 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-white bg-black/40 text-white placeholder-white/30 transition-all"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wider text-red-200 mb-1">Password</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-red-200 mb-1.5">Password</label>
                         <input 
                           type="password" 
                           name="password"
                           value={loginData.password}
                           onChange={handleLoginChange}
                           placeholder="******"
-                          className="w-full border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-white bg-black/40 text-white placeholder-white/30"
+                          className="w-full border border-white/10 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-white bg-black/40 text-white placeholder-white/30 transition-all"
                           required
                         />
                       </div>
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-white text-red-950 font-bold py-2.5 rounded-lg text-sm hover:bg-red-100 transition-colors shadow disabled:bg-red-800 disabled:text-red-300"
+                        className="w-full bg-white text-red-950 font-extrabold py-3.5 rounded-xl text-base hover:bg-red-100 transition-all shadow-xl disabled:bg-red-800 disabled:text-red-300"
                       >
                         {loading ? 'Memproses...' : 'Lihat Poin Saya'}
                       </button>
                     </form>
                   </div>
                 ) : (
-                  
-                  /* KONDISI B: JIKA LOGIN MEMBER SUKSES */
                   <div className="space-y-6">
-                    <div className="bg-gradient-to-br from-red-700 to-red-900 text-white rounded-2xl p-6 shadow-2xl border border-white/10 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-4 text-3xl opacity-20">☕</div>
+                    <div className="bg-gradient-to-br from-red-800 via-red-900 to-amber-950 text-white rounded-3xl p-8 sm:p-10 shadow-2xl border border-white/15 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-6 text-5xl opacity-15 select-none">☕</div>
                       
-                      <span className="text-xs font-bold tracking-widest text-red-200 uppercase block mb-6">Kartu Member Digital</span>
+                      <span className="text-xs font-extrabold tracking-widest text-yellow-400 uppercase block mb-8 border-b border-white/10 pb-2 w-fit">
+                        Kartu Member Digital
+                      </span>
                       
-                      <div className="space-y-4">
+                      <div className="space-y-6">
                         <div>
-                          <span className="text-[10px] text-red-200 uppercase tracking-wider block">Nama Lengkap</span>
-                          <h3 className="text-xl font-bold tracking-wide">{currentMember.name}</h3>
+                          <span className="text-[11px] text-red-200 uppercase tracking-widest block mb-1">Nama Lengkap</span>
+                          <h3 className="text-2xl font-black tracking-wide text-white">{currentMember.name}</h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-6 bg-black/20 p-4 rounded-xl border border-white/5">
                           <div>
-                            <span className="text-[10px] text-red-200 uppercase tracking-wider block">No. Telepon</span>
-                            <p className="text-sm font-medium">{currentMember.phone || '-'}</p>
+                            <span className="text-[10px] text-red-200 uppercase tracking-widest block mb-0.5">No. Telepon</span>
+                            <p className="text-base font-semibold tracking-medium text-red-50">{currentMember.phone || '-'}</p>
                           </div>
                           <div>
-                            <span className="text-[10px] text-red-200 uppercase tracking-wider block">Total Akumulasi Poin</span>
-                            <p className="text-lg font-extrabold text-yellow-300">{currentMember.points || 0} Poin</p>
+                            <span className="text-[10px] text-red-200 uppercase tracking-widest block mb-0.5">Akumulasi Poin</span>
+                            <p className="text-2xl font-black text-yellow-300">{currentMember.points || 0} Poin</p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="mt-8 pt-6 border-t border-white/10 flex flex-col items-center justify-center space-y-3">
-                        <div className="bg-white p-2.5 rounded-xl shadow-inner w-fit">
+                      <div className="mt-10 pt-8 border-t border-white/10 flex flex-col items-center justify-center space-y-4">
+                        <div className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-amber-900/10">
                           <img 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`https://kopikel9.com/member-detail?id=${currentMember.id}&name=${encodeURIComponent(currentMember.name)}&points=${currentMember.points}&phone=${currentMember.phone}`)}`} 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://kopikel9.com/member-detail?id=${currentMember.id}&name=${encodeURIComponent(currentMember.name)}&points=${currentMember.points}&phone=${currentMember.phone}`)}`} 
                             alt="QR Code Member"
-                            className="w-36 h-36"
+                            className="w-44 h-44"
                           />
                         </div>
-                        <p className="text-[11px] text-red-100 text-center max-w-xs">
+                        <p className="text-xs text-red-100 text-center max-w-sm leading-relaxed">
                           Tunjukkan QR Code ini ke kasir untuk memproses diskon dan menambahkan poin belanja Anda.
                         </p>
                       </div>
@@ -323,7 +347,7 @@ function Home() {
 
                     <button
                       onClick={handleMemberLogout}
-                      className="w-full border border-white/20 text-red-200 hover:text-white bg-black/30 py-2 rounded-lg text-xs font-medium transition-all shadow-sm"
+                      className="w-full border border-white/20 text-red-200 hover:text-white bg-black/40 hover:bg-black/60 py-3 rounded-xl text-sm font-semibold transition-all shadow-md"
                     >
                       Keluar dari Mode Cek Poin
                     </button>
@@ -336,9 +360,9 @@ function Home() {
         </main>
       </div>
 
-      {/* FOOTER MINIMALIS - SUDAH DIUBAH MENJADI SOBREMESSA */}
+      {/* FOOTER MINIMALIS */}
       <footer className="border-t border-white/10 py-6 bg-amber-950/90 text-center text-xs text-red-200 w-full backdrop-blur-sm">
-        <p>&copy; {new Date().getFullYear()} Sobremessa. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Sobremesa. All rights reserved.</p>
       </footer>
     </div>
   );

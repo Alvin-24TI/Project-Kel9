@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from './pages/home';
 
@@ -13,16 +13,14 @@ import MemberList from './pages/MemberList';
 import PromoMembership from './pages/PromoMembership';
 import InputTransaksiMember from './pages/InputTransaksiMember';
 import TransaksiMember from './pages/TransaksiMember';
+import NotificationManagement from './pages/NotificationManagement'; // 1. Import komponen Notifikasi Anda
 
-
+// Lazy loading components
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
 const Analytics = React.lazy(() => import("./pages/Analytics"));
 const Login = React.lazy(() => import("./pages/auth/Login"));
 const Register = React.lazy(() => import("./pages/auth/Register"));
 const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
-const memberDetail = React.lazy(() => import("./pages/MemberDetail"));
-const inputTransaksiMember = React.lazy(() => import("./pages/InputTransaksiMember"));
-const transaksiMember = React.lazy(() => import("./pages/TransaksiMember"));
 
 function App() {
   const location = useLocation();
@@ -34,29 +32,45 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
+    <Suspense 
+      fallback={
+        <div className="flex items-center justify-center min-h-screen bg-[#1c1917] text-white">
+          <div className="text-center space-y-2">
+            <div className="animate-spin text-4xl">☕</div>
+            <p className="text-sm tracking-wider text-red-200">Memuat halaman...</p>
+          </div>
+        </div>
+      }
+    >
+      <Routes>
+        {/* Halaman Landing Page Utama */}
+        <Route path="/" element={<Home />} />
 
-      <Route path="/" element={<Layout />}>
-       <Route path="dashboard" element={<Dashboard />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="/member-list" element={<MemberList />} />
-        <Route path="/register-member" element={<RegisterMember />} />
-        <Route path="/member-detail" element={<MemberDetail />} />
-        <Route path="/promo-membership" element={<PromoMembership />} />
-        <Route path="/memberlist/:nama" element={<MemberDetail />} />
-        <Route path="/input-transaksi-member" element={<InputTransaksiMember />} />
-        <Route path="/transaksi-member" element={<TransaksiMember />} />
-      </Route>
-      
-      <Route element={<AuthLayout />}>
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="forgot" element={<Forgot />} />
-      </Route>
-    </Routes>
-
-
+        {/* Kelompok Halaman dengan Layout Main/Dashboard */}
+        <Route path="/" element={<Layout />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="member-list" element={<MemberList />} />
+          <Route path="register-member" element={<RegisterMember />} />
+          <Route path="member-detail" element={<MemberDetail />} />
+          <Route path="promo-membership" element={<PromoMembership />} />
+          
+          {/* 2. Jalur Rute Baru untuk Halaman Manajemen Notifikasi Anda */}
+          <Route path="notification-management" element={<NotificationManagement />} />
+          
+          <Route path="memberlist/:nama" element={<MemberDetail />} />
+          <Route path="input-transaksi-member" element={<InputTransaksiMember />} />
+          <Route path="transaksi-member" element={<TransaksiMember />} />
+        </Route>
+        
+        {/* Kelompok Halaman Autentikasi */}
+        <Route element={<AuthLayout />}>
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="forgot" element={<Forgot />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
 
