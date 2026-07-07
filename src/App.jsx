@@ -1,6 +1,8 @@
 import React, { useEffect, Suspense } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Home from './pages/home';
+import AuthProvider from './utils/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import "./css/style.css";
 import "./charts/ChartjsConfig";
@@ -22,7 +24,7 @@ const Login = React.lazy(() => import("./pages/auth/Login"));
 const Register = React.lazy(() => import("./pages/auth/Register"));
 const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
 
-function App() {
+function AppContent() {
   const location = useLocation();
 
   useEffect(() => {
@@ -46,8 +48,15 @@ function App() {
         {/* Halaman Landing Page Utama */}
         <Route path="/" element={<Home />} />
 
-        {/* Kelompok Halaman dengan Layout Main/Dashboard */}
-        <Route path="/" element={<Layout />}>
+        {/* Kelompok Halaman dengan Layout Main/Dashboard - Protected Routes */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute allowedRoles={['member', 'staff', 'admin']}>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="member-list" element={<MemberList />} />
@@ -71,6 +80,14 @@ function App() {
         </Route>
       </Routes>
     </Suspense>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

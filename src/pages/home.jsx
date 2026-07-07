@@ -51,27 +51,34 @@ function Home() {
     setLoginData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Fungsi pengecekan akun member ke Supabase
+  // Fungsi pengecekan akun member ke Supabase (SUDAH DIPERBAIKI)
   const handleMemberLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setLoginError('');
 
-    const { data, error } = await supabase
-      .from('members')
-      .select('*')
-      .eq('username', loginData.username)
-      .eq('password', loginData.password)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('members')
+        .select('*')
+        .eq('username', loginData.username)
+        .eq('password', loginData.password)
+        .single();
 
-    if (error || !data) {
-      setLoginError('Username atau Password member salah!');
+      if (error || !data) {
+        setLoginError('Username atau Password member salah!');
+        setLoading(false);
+        return;
+      }
+
+      // MENGGUNAKAN FUNGSI SETTER YANG BENAR AGAR TIDAK CRASH
+      setCurrentMember(data); 
+    } catch (err) {
+      console.error(err);
+      setLoginError('Terjadi kesalahan jaringan ke database!');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    currentMember(data);
-    setLoading(false);
   };
 
   // Fungsi untuk keluar/logout dari tampilan kartu member di home
@@ -141,26 +148,24 @@ function Home() {
         {/* AREA KONTEN UTAMA */}
         <main className="w-full h-auto min-h-[calc(100vh-9rem)] px-6 md:px-16 py-16 bg-amber-950/75 backdrop-blur-sm flex items-center justify-center">
             
-          {/* TAB 1: HOME (DIBUAT RAKSASA DAN MEMENUHI LAYOUT HAMPIR 100%) */}
+          {/* TAB 1: HOME */}
           {activeTab === 'home' && (
             <div className="animate-fadeIn w-full max-w-[1600px] mx-auto py-6">
               <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
                 
-                {/* BLOK TEKS SEBELAH KIRI (FONT DI-UPGRADE KE UKURAN GIANT) */}
-                <div className="flex-[1.2] space-y-8 text-left">
+                {/* BLOK TEKS SEBELAH KIRI */}
+                <div className="space-y-8 text-left lg:flex-[1.2]">
                   <span className="text-red-400 font-bold tracking-widest text-base uppercase bg-red-950/40 border border-red-500/20 px-4 py-1.5 rounded-full w-fit block">
                     Welcome to Our Brew
                   </span>
                   
-                  {/* Judul Beranda Diperbesar Menjadi Ultra-Raksasa */}
                   <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[1.05] drop-shadow-md">
                     Dari Hati, <br />
                     Untuk Pecinta <br />
                     Kopi dan roti.
                   </h1>
                   
-                  {/* Teks Deskripsi Diperbesar Lebih Nyaman Dibaca */}
-                  <p className="text-red-100/95 leading-relaxed text-lg md:text-xl max-w-3xl font-medium antialiased">
+                  <p className="text-lg font-medium leading-relaxed antialiased text-red-100/95 md:text-xl max-w-3xl">
                     "Kami percaya bahwa kebahagiaan sejati dimulai dari aroma kopi yang segar dan kehangatan roti yang baru matang. Memadukan biji kopi pilihan nusantara dengan panggangan pastry otentik buatan tangan, kami menghadirkan perpaduan rasa sempurna untuk melengkapi setiap cerita hari Anda."
                   </p>
                   
@@ -169,21 +174,20 @@ function Home() {
                       onClick={() => setActiveTab('menu')}
                       className="bg-white text-red-950 font-black px-10 py-4 rounded-xl text-base shadow-2xl hover:bg-red-100 transition-all duration-200 transform hover:scale-105 active:scale-95"
                     >
-                      Lihat Menu Kami
+                      Look Menu Us
                     </button>
                   </div>
                 </div>
 
-                {/* BLOK VISUAL SEBELAH KANAN (KOTAK GAMBAR DIBESARKAN MAKSIMAL) */}
+                {/* BLOK VISUAL SEBELAH KANAN */}
                 <div 
-                  className="flex-1 w-full max-w-xl lg:max-w-2xl aspect-square bg-cover bg-center border-2 border-white/20 rounded-3xl flex items-center justify-center p-12 text-white shadow-2xl relative overflow-hidden group transition-all duration-300"
+                  className="w-full max-w-xl aspect-square bg-cover bg-center border-2 border-white/20 rounded-3xl flex items-center justify-center p-12 text-white shadow-2xl relative overflow-hidden group transition-all duration-300 lg:flex-1"
                   style={{ 
                     backgroundImage: `linear-gradient(to top, rgba(127, 29, 29, 0.95), rgba(0, 0, 0, 0.25)), url(${produk2})` 
                   }}
                 >
                   <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1.5px,transparent_1.5px)] [background-size:24px_24px]"></div>
                   
-                  {/* Konten Di Dalam Kotak Disesuaikan Ukurannya */}
                   <div className="text-center space-y-4 z-10 drop-shadow-[0_10px_10px_rgba(0,0,0,0.7)]">
                     <span className="text-8xl md:text-9xl block transform group-hover:scale-110 transition-transform duration-500 select-none animate-pulse">
                       🥐
@@ -236,7 +240,7 @@ function Home() {
                         </h4>
                       </div>
                       
-                      <div className="pt-2 Bird-t border-white/5 flex items-center justify-between">
+                      <div className="pt-2 border-t border-white/5 flex items-center justify-between">
                         <button 
                           onClick={() => setActiveTab('member')}
                           className="text-sm text-red-300 font-bold hover:text-white underline underline-offset-4 transition-colors"
@@ -316,17 +320,20 @@ function Home() {
                       <div className="space-y-6">
                         <div>
                           <span className="text-[11px] text-red-200 uppercase tracking-widest block mb-1">Nama Lengkap</span>
-                          <h3 className="text-2xl font-black tracking-wide text-white">{currentMember.name}</h3>
+                          {/* SUDAH DIUBAH KE .nama SESUAI STRUKTUR DATABASE */}
+                          <h3 className="text-2xl font-black tracking-wide text-white">{currentMember.nama}</h3>
                         </div>
 
                         <div className="grid grid-cols-2 gap-6 bg-black/20 p-4 rounded-xl border border-white/5">
                           <div>
                             <span className="text-[10px] text-red-200 uppercase tracking-widest block mb-0.5">No. Telepon</span>
-                            <p className="text-base font-semibold tracking-medium text-red-50">{currentMember.phone || '-'}</p>
+                            {/* SUDAH DIUBAH KE .no_telepon SESUAI STRUKTUR DATABASE */}
+                            <p className="text-base font-semibold tracking-medium text-red-50">{currentMember.no_telepon || '-'}</p>
                           </div>
                           <div>
                             <span className="text-[10px] text-red-200 uppercase tracking-widest block mb-0.5">Akumulasi Poin</span>
-                            <p className="text-2xl font-black text-yellow-300">{currentMember.points || 0} Poin</p>
+                            {/* SUDAH DIUBAH KE .total_poin SESUAI STRUKTUR DATABASE */}
+                            <p className="text-2xl font-black text-yellow-300">{currentMember.total_poin || 0} Poin</p>
                           </div>
                         </div>
                       </div>
@@ -334,7 +341,8 @@ function Home() {
                       <div className="mt-10 pt-8 border-t border-white/10 flex flex-col items-center justify-center space-y-4">
                         <div className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-amber-900/10">
                           <img 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://kopikel9.com/member-detail?id=${currentMember.id}&name=${encodeURIComponent(currentMember.name)}&points=${currentMember.points}&phone=${currentMember.phone}`)}`} 
+                            /* LINK QR DIBERI PARAMETER YANG BENAR SESUAI VARIABEL DATABASE BARU */
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://kopikel9.com/member-detail?id=${currentMember.id}&name=${encodeURIComponent(currentMember.nama)}&points=${currentMember.total_poin}&phone=${currentMember.no_telepon}`)}`} 
                             alt="QR Code Member"
                             className="w-44 h-44"
                           />
