@@ -29,7 +29,7 @@ function DashboardCardMember() {
           </div>
           <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
             <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{totalPointsDistributed.toLocaleString('id-ID')} Pts</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Poin Aktif Beredar</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">Poin Aktif beredar</div>
           </div>
         </div>
       </div>
