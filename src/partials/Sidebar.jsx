@@ -131,18 +131,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
                 </NavLink>
               </li>
 
-              {/* Menu Detail Member */}
-              <li>
-                <NavLink
-                  to="/member-detail"
-                  className={({ isActive }) => linkClasses(isActive)}
-                >
-                  <svg className="shrink-0 fill-current w-4 h-4 mr-3" viewBox="0 0 16 16">
-                    <path d="M8 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-4 4a4 4 0 0 1 8 0H4Z" />
-                  </svg>
-                  <span className="text-sm font-medium">Detail Member</span>
-                </NavLink>
-              </li>
+
 
              
 

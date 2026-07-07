@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Html5Qrcode } from 'html5-qrcode';
 import { supabase } from '../lib/supabaseClient'; // Pastikan path ke client Supabase sudah benar
 
 function MemberList() {
@@ -10,6 +11,66 @@ function MemberList() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [scannerActive, setScannerActive] = useState(false);
+  const [scannerError, setScannerError] = useState('');
+  const scannerRef = useRef(null);
+  const html5QrCodeRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (html5QrCodeRef.current) {
+        html5QrCodeRef.current.stop().catch(() => {});
+      }
+    };
+  }, []);
+
+  const startScanner = async () => {
+    if (!scannerRef.current) return;
+
+    setScannerError('');
+    setScannerActive(true);
+
+    try {
+      const html5QrCode = new Html5Qrcode('member-list-scanner');
+      html5QrCodeRef.current = html5QrCode;
+
+      await html5QrCode.start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        (decodedText) => {
+          try {
+            const url = new URL(decodedText);
+            const scannedId = url.searchParams.get('id') || decodedText;
+            if (scannedId) {
+              setScannerActive(false);
+              html5QrCode.stop().catch(() => {});
+              navigate(`/member-detail?id=${scannedId}`);
+            }
+          } catch {
+            if (decodedText) {
+              setScannerActive(false);
+              html5QrCode.stop().catch(() => {});
+              navigate(`/member-detail?id=${decodedText}`);
+            }
+          }
+        },
+        () => {}
+      );
+    } catch {
+      setScannerError('Tidak bisa mengakses kamera. Pastikan izin kamera sudah aktif.');
+      setScannerActive(false);
+    }
+  };
+
+  const stopScanner = async () => {
+    if (html5QrCodeRef.current) {
+      try {
+        await html5QrCodeRef.current.stop();
+      } catch {}
+    }
+    setScannerActive(false);
+    setScannerError('');
+  };
 
   // useEffect untuk mengambil data secara dinamis dari Supabase
   useEffect(() => {
@@ -66,6 +127,44 @@ function MemberList() {
           <strong>Error:</strong> {error}
         </div>
       )}
+
+      <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-400">Scan QR Member</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Pindai QR member dari laptop untuk langsung membuka profilnya.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {!scannerActive ? (
+              <button
+                type="button"
+                onClick={startScanner}
+                className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-800"
+              >
+                Buka Kamera
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={stopScanner}
+                className="rounded-lg bg-gray-700 px-3 py-2 text-xs font-semibold text-white hover:bg-gray-800"
+              >
+                Stop
+              </button>
+            )}
+          </div>
+        </div>
+
+        {scannerActive ? (
+          <div ref={scannerRef} className="mt-3 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700">
+            <div id="member-list-scanner" className="min-h-[240px] w-full bg-black" />
+          </div>
+        ) : (
+          <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Gunakan kamera untuk memindai QR member dari halaman ini.</p>
+        )}
+
+        {scannerError && <p className="mt-2 text-xs text-red-600">{scannerError}</p>}
+      </div>
 
       {/* Input Form Pencarian */}
       <div className="mb-5 max-w-md">

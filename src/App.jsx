@@ -13,6 +13,7 @@ import RegisterMember from './pages/RegisterMember';
 import MemberDetail from './pages/MemberDetail';
 import MemberList from './pages/MemberList';
 import PromoMembership from './pages/PromoMembership';
+import TukarPromo from './pages/TukarPromo';
 import InputTransaksiMember from './pages/InputTransaksiMember';
 import TransaksiMember from './pages/TransaksiMember';
 import NotificationManagement from './pages/NotificationManagement'; // 1. Import komponen Notifikasi Anda
@@ -63,6 +64,8 @@ function AppContent() {
           <Route path="register-member" element={<RegisterMember />} />
           <Route path="member-detail" element={<MemberDetail />} />
           <Route path="promo-membership" element={<PromoMembership />} />
+          <Route path="tukar-promo/:id" element={<TukarPromo />} />
+          <Route path="tukar-promo" element={<TukarPromo />} />
           
           {/* 2. Jalur Rute Baru untuk Halaman Manajemen Notifikasi Anda */}
           <Route path="notification-management" element={<NotificationManagement />} />

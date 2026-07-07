@@ -4,10 +4,14 @@ import { supabase } from '../lib/supabaseClient';
 import Datepicker from '../components/Datepicker';
 import LineChart02 from '../charts/LineChart02';
 import BarChart01 from '../charts/BarChart01';
-import * as Utils from '../utils/Utils';
 
-// Safely extract tailwindConfig whether it's nested or directly on the module object
-const tailwindConfig = Utils.tailwindConfig || (Utils.default && Utils.default.tailwindConfig);
+const chartColors = {
+  indigo: '#6366f1',
+  amber: '#f59e0b',
+  sky: '#0ea5e9',
+  emerald: '#10b981',
+  slate: '#64748b',
+};
 
 function Analytics() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +20,7 @@ function Analytics() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalTransactions, setTotalTransactions] = useState(0);
   const [topMember, setTopMember] = useState({ name: '-', points: 0 });
+  const [error, setError] = useState(null);
 
   // Chart data states
   const [transactionChartData, setTransactionChartData] = useState({ labels: [], datasets: [] });
@@ -28,8 +33,8 @@ function Analytics() {
 
         // 1. Fetch Transactions Data
         const { data: transactions, error: txError } = await supabase
-          .from('transaksi')
-          .select('*')
+          .from('transactions')
+          .select('id, amount, created_at')
           .order('created_at', { ascending: true });
 
         if (txError) throw txError;
@@ -37,8 +42,8 @@ function Analytics() {
         // 2. Fetch Members Data for Leaderboard
         const { data: members, error: memError } = await supabase
           .from('members')
-          .select('nama, total_poin')
-          .order('total_poin', { ascending: false })
+          .select('name, points')
+          .order('points', { ascending: false })
           .limit(5);
 
         if (memError) throw memError;
@@ -76,9 +81,9 @@ function Analytics() {
             {
               label: 'Daily Revenue',
               data: txValues,
-              borderColor: tailwindConfig().theme.colors.indigo[500],
+              borderColor: chartColors.indigo,
               fill: true,
-              backgroundColor: `rgba(99, 102, 241, 0.1)`,
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
               borderWidth: 2,
               tension: 0.2,
             },
@@ -88,12 +93,12 @@ function Analytics() {
         // --- PROCESS MEMBERS (Points Leaderboard) ---
         if (members && members.length > 0) {
           setTopMember({
-            name: members[0].nama,
-            points: members[0].total_poin,
+            name: members[0].name || members[0].nama || '-',
+            points: Number(members[0].points ?? members[0].total_poin ?? 0),
           });
 
-          const memberLabels = members.map(m => m.nama);
-          const memberPoints = members.map(m => m.total_poin);
+          const memberLabels = members.map(m => m.name || m.nama || 'Unknown');
+          const memberPoints = members.map(m => Number(m.points ?? m.total_poin ?? 0));
 
           setMemberChartData({
             labels: memberLabels,
@@ -102,11 +107,11 @@ function Analytics() {
                 label: 'Total Points Gained',
                 data: memberPoints,
                 backgroundColor: [
-                  tailwindConfig().theme.colors.amber[500],
-                  tailwindConfig().theme.colors.sky[500],
-                  tailwindConfig().theme.colors.indigo[500],
-                  tailwindConfig().theme.colors.emerald[500],
-                  tailwindConfig().theme.colors.slate[400],
+                  chartColors.amber,
+                  chartColors.sky,
+                  chartColors.indigo,
+                  chartColors.emerald,
+                  chartColors.slate,
                 ],
                 borderWidth: 1,
               },
@@ -116,6 +121,7 @@ function Analytics() {
 
       } catch (err) {
         console.error('Error compiling analytics data:', err.message);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -147,6 +153,11 @@ function Analytics() {
           <div className="text-slate-500 animate-pulse text-lg font-medium">
             Analyzing database records...
           </div>
+        </div>
+      ) : error ? (
+        <div className="p-6 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-700 rounded-xl text-red-700 dark:text-red-200">
+          <h2 className="font-semibold mb-2">Analytics Error</h2>
+          <p>{error}</p>
         </div>
       ) : (
         <>

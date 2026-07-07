@@ -1,44 +1,74 @@
-import React, { useState, useEffect } from 'react'; // Tambah useEffect di sini
-import dummyPromos from '../Data/promoData.json';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
+
+const PROMO_TABLE = 'promos'; // Ganti nama tabel jika di Supabase Anda menggunakan nama lain
 
 export default function PromoMembership() {
 
   // DATA PROMO 
-  const [promoList, setPromoList] = useState(dummyPromos); // State Master data asli
-  const [filteredPromos, setFilteredPromos] = useState(dummyPromos); // State data yang tampil di tabel
+  const [promoList, setPromoList] = useState([]); // State Master data asli
+  const [filteredPromos, setFilteredPromos] = useState([]); // State data yang tampil di tabel
   const [searchTerm, setSearchTerm] = useState(''); // State penampung text input pencarian
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(window.location.search);
+  const preMemberId = searchParams.get('memberId');
 
   // FORM INPUT
   const [formData, setFormData] = useState({
-    nama: "",
-    jenis: "",
-    target: "",
-    periode: "",
+    title: "",
+    description: "",
+    point_cost: "",
   });
 
   // ==========================================
   // LOGIKA UTAMA: DEBOUNCE SEARCH (TANPA AXIOS)sdsd
   // ==========================================
   useEffect(() => {
-    // Beri jeda 500ms sebelum menyaring data secara lokal
+    const fetchPromos = async () => {
+      setLoading(true);
+      setError('');
+
+      const { data, error: supabaseError } = await supabase
+        .from(PROMO_TABLE)
+        .select('*')
+        .order('id', { ascending: false });
+
+      if (supabaseError) {
+        setError(supabaseError.message || 'Gagal mengambil data promo dari Supabase.');
+        setPromoList([]);
+        setFilteredPromos([]);
+      } else {
+        setPromoList(data || []);
+        setFilteredPromos(data || []);
+      }
+
+      setLoading(false);
+    };
+
+    fetchPromos();
+  }, []);
+
+  useEffect(() => {
     const timeout = setTimeout(() => {
       const query = searchTerm.toLowerCase();
 
       const hasilFilter = promoList.filter((promo) => {
         return (
-          promo.nama.toLowerCase().includes(query) ||
-          promo.jenis.toLowerCase().includes(query) ||
-          promo.target.toLowerCase().includes(query) ||
-          promo.periode.toLowerCase().includes(query)
+          (promo.title || '').toLowerCase().includes(query) ||
+          (promo.description || '').toLowerCase().includes(query) ||
+          (promo.point_cost?.toString() || '').toLowerCase().includes(query) ||
+          ((promo.is_active ? 'aktif' : 'nonaktif') || '').toLowerCase().includes(query)
         );
       });
 
       setFilteredPromos(hasilFilter);
     }, 500); // 500ms debounce
 
-    // Cleanup function: Membatalkan proses filter jika user mengetik huruf baru sebelum 500ms
     return () => clearTimeout(timeout);
-  }, [searchTerm, promoList]); // Berjalan otomatis jika ketikan search atau data master berubah
+  }, [searchTerm, promoList]);
   // ==========================================
 
   // HANDLE INPUT
@@ -50,55 +80,76 @@ export default function PromoMembership() {
   };
 
   // TAMBAH PROMO
-  const tambahPromo = (e) => {
+  const tambahPromo = async (e) => {
     e.preventDefault();
 
-    if (!formData.nama || !formData.jenis || !formData.target || !formData.periode) {
+    if (!formData.title || !formData.description || !formData.point_cost) {
       alert("Semua field wajib diisi!");
       return;
     }
 
-    const maxId = promoList.length > 0 ? Math.max(...promoList.map(p => p.id)) : 0;
-
     const promoBaru = {
-      id: maxId + 1,
-      ...formData,
-      status: "Aktif",
+      title: formData.title,
+      description: formData.description,
+      point_cost: Number(formData.point_cost),
+      is_active: true,
     };
 
-    // Tambah ke data master (useEffect di atas akan otomatis memperbarui filteredPromos)
-    setPromoList([...promoList, promoBaru]);
-    alert("Promo berhasil ditambahkan!");
+    const { data, error: supabaseError } = await supabase
+      .from(PROMO_TABLE)
+      .insert([promoBaru])
+      .select();
 
-    setFormData({
-      nama: "",
-      jenis: "",
-      target: "",
-      periode: "",
-    });
+    if (supabaseError) {
+      alert(`Gagal menambahkan promo: ${supabaseError.message}`);
+      return;
+    }
+
+    setPromoList([...(promoList || []), ...(data || [])]);
+    setFormData({ title: "", description: "", point_cost: "" });
+    alert("Promo berhasil ditambahkan!");
   };
 
   // HAPUS PROMO
-  const hapusPromo = (id) => {
+  const hapusPromo = async (id) => {
     const konfirmasi = confirm("Yakin ingin menghapus promo?");
-    if (konfirmasi) {
-      const filterPromo = promoList.filter((promo) => promo.id !== id);
-      setPromoList(filterPromo);
+    if (!konfirmasi) return;
+
+    const { error: supabaseError } = await supabase
+      .from(PROMO_TABLE)
+      .delete()
+      .eq('id', id);
+
+    if (supabaseError) {
+      alert(`Gagal menghapus promo: ${supabaseError.message}`);
+      return;
     }
+
+    setPromoList(promoList.filter((promo) => promo.id !== id));
   };
 
   // UBAH STATUS
-  const toggleStatus = (id) => {
-    const updatedPromo = promoList.map((promo) => {
-      if (promo.id === id) {
-        return {
-          ...promo,
-          status: promo.status === "Aktif" ? "Nonaktif" : "Aktif",
-        };
-      }
-      return promo;
-    });
-    setPromoList(updatedPromo);
+  const toggleStatus = async (id) => {
+    const promo = promoList.find((promo) => promo.id === id);
+    if (!promo) return;
+
+    const nextStatus = !promo.is_active;
+
+    const { error: supabaseError } = await supabase
+      .from(PROMO_TABLE)
+      .update({ is_active: nextStatus })
+      .eq('id', id);
+
+    if (supabaseError) {
+      alert(`Gagal mengubah status promo: ${supabaseError.message}`);
+      return;
+    }
+
+    setPromoList(
+      promoList.map((item) =>
+        item.id === id ? { ...item, is_active: nextStatus } : item
+      )
+    );
   };
 
   return (
@@ -122,6 +173,9 @@ export default function PromoMembership() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="form-input w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-800 dark:text-gray-100 shadow-sm"
             />
+            {error && (
+              <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-12 gap-6">
@@ -132,70 +186,47 @@ export default function PromoMembership() {
               </h2>
 
               <form onSubmit={tambahPromo} className="space-y-4">
-                {/* Nama Promo */}
+                {/* Judul Promo */}
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Nama Promo
+                    Judul Promo
                   </label>
                   <input
                     type="text"
-                    name="nama"
-                    value={formData.nama}
+                    name="title"
+                    value={formData.title}
                     onChange={handleChange}
                     placeholder="Contoh: Cashback Akhir Tahun"
                     className="form-input w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 text-sm"
                   />
                 </div>
 
-                {/* Jenis Promo */}
+                {/* Deskripsi Promo */}
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Jenis Promo
+                    Deskripsi Promo
                   </label>
-                  <select
-                    name="jenis"
-                    value={formData.jenis}
+                  <textarea
+                    name="description"
+                    value={formData.description}
                     onChange={handleChange}
-                    className="form-select w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 text-sm"
-                  >
-                    <option value="">Pilih Jenis</option>
-                    <option value="Diskon">Diskon</option>
-                    <option value="Reward">Reward</option>
-                    <option value="Cashback">Cashback</option>
-                    <option value="Double Point">Double Point</option>
-                  </select>
+                    placeholder="Contoh: Dapatkan 10% cashback untuk semua pembelian"
+                    className="form-textarea w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 text-sm"
+                    rows={3}
+                  />
                 </div>
 
-                {/* Target Member */}
+                {/* Biaya Poin */}
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Target Member
-                  </label>
-                  <select
-                    name="target"
-                    value={formData.target}
-                    onChange={handleChange}
-                    className="form-select w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 text-sm"
-                  >
-                    <option value="">Pilih Target</option>
-                    <option value="Semua Member">Semua Member</option>
-                    <option value="Gold">Gold</option>
-                    <option value="Silver">Silver</option>
-                    <option value="Bronze">Bronze</option>
-                  </select>
-                </div>
-
-                {/* Periode */}
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                    Periode Promo
+                    Point Cost
                   </label>
                   <input
-                    type="text"
-                    name="periode"
-                    value={formData.periode}
+                    type="number"
+                    name="point_cost"
+                    value={formData.point_cost}
                     onChange={handleChange}
-                    placeholder="Contoh: 01 Juni - 30 Juni 2026"
+                    placeholder="Contoh: 250"
                     className="form-input w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 text-sm"
                   />
                 </div>
@@ -223,10 +254,9 @@ export default function PromoMembership() {
                   <table className="table-auto w-full dark:text-gray-300">
                     <thead className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50">
                       <tr>
-                        <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Nama Promo</div></th>
-                        <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Jenis</div></th>
-                        <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Target</div></th>
-                        <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Periode</div></th>
+                        <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Judul Promo</div></th>
+                        <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Deskripsi</div></th>
+                        <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Point Cost</div></th>
                         <th className="p-2 whitespace-nowrap"><div className="font-semibold text-left">Status</div></th>
                         <th className="p-2 whitespace-nowrap"><div className="font-semibold text-center">Aksi</div></th>
                       </tr>
@@ -236,30 +266,33 @@ export default function PromoMembership() {
                         filteredPromos.map((promo) => (
                           <tr key={promo.id}>
                             <td className="p-2 whitespace-nowrap">
-                              <div className="font-medium text-gray-800 dark:text-gray-100">{promo.nama}</div>
+                              <div className="font-medium text-gray-800 dark:text-gray-100">{promo.title}</div>
                             </td>
                             <td className="p-2 whitespace-nowrap">
-                              <div>{promo.jenis}</div>
+                              <div className="text-gray-500 text-sm">{promo.description}</div>
                             </td>
                             <td className="p-2 whitespace-nowrap">
-                              <div className="text-violet-500 font-medium">{promo.target}</div>
-                            </td>
-                            <td className="p-2 whitespace-nowrap">
-                              <div className="text-gray-500 text-xs">{promo.periode}</div>
+                              <div className="text-violet-500 font-medium">{promo.point_cost}</div>
                             </td>
                             <td className="p-2 whitespace-nowrap">
                               <span
                                 className={`inline-flex font-medium text-xs rounded-full px-2.5 py-0.5 ${
-                                  promo.status === "Aktif"
+                                  promo.is_active
                                     ? "bg-green-500/20 text-green-700 dark:text-green-400"
                                     : "bg-red-500/20 text-red-700 dark:text-red-400"
                                 }`}
                               >
-                                {promo.status}
+                                {promo.is_active ? 'Aktif' : 'Nonaktif'}
                               </span>
                             </td>
                             <td className="p-2 whitespace-nowrap">
                               <div className="flex gap-2 justify-center">
+                                <button
+                                  onClick={() => navigate(`/tukar-promo/${promo.id}${preMemberId ? `?memberId=${encodeURIComponent(preMemberId)}` : ''}`)}
+                                  className="text-xs bg-emerald-100 dark:bg-emerald-700 hover:bg-emerald-200 dark:hover:bg-emerald-600 text-emerald-700 dark:text-emerald-100 font-medium py-1 px-2.5 rounded transition-colors"
+                                >
+                                  Tukarkan
+                                </button>
                                 <button
                                   onClick={() => toggleStatus(promo.id)}
                                   className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 font-medium py-1 px-2.5 rounded transition-colors"
