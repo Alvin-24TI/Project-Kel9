@@ -272,13 +272,19 @@ function MemberList() {
                       </td>
                       {/* Kolom Tombol Aksi */}
                       <td className="p-2 whitespace-nowrap">
-                        <div className="text-center">
+                        <div className="flex justify-center gap-2">
                           <button
                             onClick={() => handleViewDetail(member)}
                             className="text-xs bg-violet-500 hover:bg-violet-600 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-colors"
                           >
-                            Lihat QR / Detail
+                            lihat detail
                           </button>
+                          <Link
+                            to={`/edit-member?id=${member.id}`}
+                            className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-1.5 px-3 rounded-lg shadow-sm transition-colors"
+                          >
+                            Edit Member
+                          </Link>
                         </div>
                       </td>
                     </tr>

@@ -17,6 +17,7 @@ import TukarPromo from './pages/TukarPromo';
 import InputTransaksiMember from './pages/InputTransaksiMember';
 import TransaksiMember from './pages/TransaksiMember';
 import NotificationManagement from './pages/NotificationManagement'; // 1. Import komponen Notifikasi Anda
+import EditMember from './pages/EditMember';
 
 // Lazy loading components
 const Dashboard = React.lazy(() => import('./pages/Dashboard'));
@@ -66,6 +67,7 @@ function AppContent() {
           <Route path="promo-membership" element={<PromoMembership />} />
           <Route path="tukar-promo/:id" element={<TukarPromo />} />
           <Route path="tukar-promo" element={<TukarPromo />} />
+          <Route path="edit-member" element={<EditMember />} />
           
           {/* 2. Jalur Rute Baru untuk Halaman Manajemen Notifikasi Anda */}
           <Route path="notification-management" element={<NotificationManagement />} />
