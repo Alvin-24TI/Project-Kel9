@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import emailjs from '@emailjs/browser';
 
 export default function NotificationManagement() {
 
@@ -14,9 +15,12 @@ export default function NotificationManagement() {
   // FORM INPUT
   const [formData, setFormData] = useState({
     namaMember: "",
+    email: "",
     tanggal: "",
     isi: "",
   });
+  const [sending, setSending] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
   // ==========================================
   // LOGIKA UTAMA: DEBOUNCE SEARCH
@@ -49,13 +53,16 @@ export default function NotificationManagement() {
   };
 
   // TAMBAH NOTIFIKASI
-  const tambahNotif = (e) => {
+  const tambahNotif = async (e) => {
     e.preventDefault();
 
-    if (!formData.namaMember || !formData.tanggal || !formData.isi) {
-      alert("Semua field wajib diisi!");
+    if (!formData.namaMember || !formData.email || !formData.tanggal || !formData.isi) {
+      setFeedback({ type: 'error', message: 'Semua field wajib diisi termasuk email tujuan.' });
       return;
     }
+
+    setSending(true);
+    setFeedback(null);
 
     // Pembuatan otomatis format IDN001, IDN002, dst.
     const nextIdNumber = notifList.length + 1;
@@ -67,15 +74,38 @@ export default function NotificationManagement() {
       status: "Terkirim"
     };
 
-    setNotifList([...notifList, notifBaru]);
-    alert(`Notifikasi ${formatIDN} berhasil disimpan!`);
+    try {
+      const templateParams = {
+        to_name: formData.namaMember,
+        to_email: formData.email,
+        notification_message: formData.isi,
+        notification_date: formData.tanggal,
+        notification_id: formatIDN,
+      };
 
-    // Reset Form
-    setFormData({
-      namaMember: "",
-      tanggal: "",
-      isi: "",
-    });
+      await emailjs.send(
+        'service_zmqs5y2',
+        'template_sftfc4d',
+        templateParams,
+        '732UV6Q_JQdHmoFZ9'
+      );
+
+      setNotifList([...notifList, notifBaru]);
+      setFeedback({ type: 'success', message: `Notifikasi ${formatIDN} berhasil dikirim dan disimpan.` });
+
+      // Reset Form
+      setFormData({
+        namaMember: "",
+        email: "",
+        tanggal: "",
+        isi: "",
+      });
+    } catch (error) {
+      setNotifList([...notifList, notifBaru]);
+      setFeedback({ type: 'error', message: `Notifikasi disimpan secara lokal, tetapi gagal dikirim ke email: ${error.text || error.message}` });
+    } finally {
+      setSending(false);
+    }
   };
 
   // HAPUS NOTIFIKASI
@@ -117,6 +147,12 @@ export default function NotificationManagement() {
                 Buat Notifikasi Baru
               </h2>
 
+              {feedback && (
+                <div className={`mb-4 rounded-lg px-3 py-2 text-sm ${feedback.type === 'success' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                  {feedback.message}
+                </div>
+              )}
+
               <form onSubmit={tambahNotif} className="space-y-4">
                 {/* Nama Member */}
                 <div>
@@ -129,6 +165,21 @@ export default function NotificationManagement() {
                     value={formData.namaMember}
                     onChange={handleChange}
                     placeholder="Masukkan nama lengkap member"
+                    className="form-input w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 text-sm"
+                  />
+                </div>
+
+                {/* Email Tujuan */}
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                    Email Tujuan
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="contoh@email.com"
                     className="form-input w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 text-sm"
                   />
                 </div>
@@ -165,9 +216,10 @@ export default function NotificationManagement() {
                 {/* BUTTON SUBMIT */}
                 <button
                   type="submit"
-                  className="w-full btn bg-violet-500 hover:bg-violet-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm shadow-sm"
+                  disabled={sending}
+                  className="w-full btn bg-violet-500 hover:bg-violet-600 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm shadow-sm disabled:opacity-70"
                 >
-                  Kirim & Simpan Notif
+                  {sending ? 'Mengirim email...' : 'Kirim & Simpan Notif'}
                 </button>
               </form>
             </div>

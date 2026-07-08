@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabaseClient';
 import Datepicker from '../components/Datepicker';
 import LineChart02 from '../charts/LineChart02';
 import BarChart01 from '../charts/BarChart01';
+import DashboardCardHistoryTransaksi from '../partials/dashboard/DashboardCardHistoryTransaksi';
+import DashboardCardHistoryPenukaran from '../partials/dashboard/DashboardCardHistoryPenukaran';
 
 const chartColors = {
   indigo: '#6366f1',
@@ -25,6 +27,8 @@ function Analytics() {
   // Chart data states
   const [transactionChartData, setTransactionChartData] = useState({ labels: [], datasets: [] });
   const [memberChartData, setMemberChartData] = useState({ labels: [], datasets: [] });
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [recentRedemptions, setRecentRedemptions] = useState([]);
 
   useEffect(() => {
     async function fetchAnalyticsData() {
@@ -34,27 +38,28 @@ function Analytics() {
         // 1. Fetch Transactions Data
         const { data: transactions, error: txError } = await supabase
           .from('transactions')
-          .select('id, amount, created_at')
-          .order('created_at', { ascending: true });
+          .select('id, amount, created_at, product_name, points_earned')
+          .order('created_at', { ascending: false });
 
         if (txError) throw txError;
 
-        // 2. Fetch Members Data for Leaderboard
-        const { data: members, error: memError } = await supabase
-          .from('members')
-          .select('name, points')
-          .order('points', { ascending: false })
-          .limit(5);
+        const normalizedTransactions = (transactions || []).map((tx) => ({
+          id: tx.id,
+          amount: Number(tx.amount || 0),
+          created_at: tx.created_at,
+          description: tx.product_name || `Transaksi #${tx.id}`,
+          points_earned: Number(tx.points_earned || 0),
+        }));
 
-        if (memError) throw memError;
+        setRecentTransactions(normalizedTransactions.slice(0, 5));
 
-        // --- PROCESS TRANSACTIONS (Revenue & Volume Over Time) ---
+        const chartTransactions = [...normalizedTransactions].reverse();
         let revenueSum = 0;
         const dailyData = {};
 
-        if (transactions && transactions.length > 0) {
-          transactions.forEach((tx) => {
-            const amount = Number(tx.total_harga || tx.nominal || tx.amount || 0);
+        if (chartTransactions.length > 0) {
+          chartTransactions.forEach((tx) => {
+            const amount = Number(tx.amount || 0);
             revenueSum += amount;
 
             const dateLabel = new Date(tx.created_at).toLocaleDateString('en-US', {
@@ -68,7 +73,7 @@ function Analytics() {
             dailyData[dateLabel] += amount;
           });
 
-          setTotalTransactions(transactions.length);
+          setTotalTransactions(chartTransactions.length);
           setTotalRevenue(revenueSum);
         }
 
@@ -89,6 +94,32 @@ function Analytics() {
             },
           ],
         });
+
+        // 2. Fetch Members Data for Leaderboard
+        const { data: members, error: memError } = await supabase
+          .from('members')
+          .select('name, points')
+          .order('points', { ascending: false })
+          .limit(5);
+
+        if (memError) throw memError;
+
+        // 3. Fetch Redemption History
+        const { data: redemptions, error: redemptionError } = await supabase
+          .from('promo_redemptions')
+          .select('id, member_id, points_spent, redeemed_at, note')
+          .order('redeemed_at', { ascending: false })
+          .limit(5);
+
+        if (redemptionError) throw redemptionError;
+
+        setRecentRedemptions((redemptions || []).map((item) => ({
+          id: item.id,
+          points_spent: Number(item.points_spent || 0),
+          redeemed_at: item.redeemed_at,
+          note: item.note,
+          reward: item.note || `Penukaran #${item.id}`,
+        })));
 
         // --- PROCESS MEMBERS (Points Leaderboard) ---
         if (members && members.length > 0) {
@@ -181,29 +212,10 @@ function Analytics() {
             </div>
           </div>
 
-          {/* Analytical Charts Grid */}
-          <div className="grid grid-cols-12 gap-6">
-            
-            {/* Transaction Trend Line Chart */}
-            <div className="flex flex-col col-span-12 lgl:col-span-7 xl:col-span-8 bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700 p-5">
-              <h2 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">Transaction Revenue Trends</h2>
-              {transactionChartData.labels.length > 0 ? (
-                <LineChart02 data={transactionChartData} width={800} height={300} />
-              ) : (
-                <div className="text-sm text-slate-400 my-auto text-center py-12">No transactions recorded yet.</div>
-              )}
-            </div>
-
-            {/* Top Members Points Bar Chart */}
-            <div className="flex flex-col col-span-12 lgl:col-span-5 xl:col-span-4 bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700 p-5">
-              <h2 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">Top 5 Member Leaderboard (Points)</h2>
-              {memberChartData.labels.length > 0 ? (
-                <BarChart01 data={memberChartData} width={350} height={300} />
-              ) : (
-                <div className="text-sm text-slate-400 my-auto text-center py-12">No member points data found.</div>
-              )}
-            </div>
-
+          {/* History Cards */}
+          <div className="grid grid-cols-12 gap-6 mt-6">
+            <DashboardCardHistoryTransaksi items={recentTransactions} className="col-span-12 lg:col-span-6" />
+            <DashboardCardHistoryPenukaran items={recentRedemptions} className="col-span-12 lg:col-span-6" />
           </div>
         </>
       )}

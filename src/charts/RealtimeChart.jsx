@@ -149,7 +149,7 @@ function RealtimeChart({
     <React.Fragment>
       <div className="px-5 py-3">
         <div className="flex items-start">
-          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2 tabular-nums">$<span ref={chartValue}>57.81</span></div>
+          <div className="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2 tabular-nums">Rp <span ref={chartValue}>57.81</span></div>
           <div ref={chartDeviation} className="text-sm font-medium px-1.5 rounded-full"></div>
         </div>
       </div>

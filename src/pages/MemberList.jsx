@@ -13,6 +13,7 @@ function MemberList() {
   const [loading, setLoading] = useState(true);
   const [scannerActive, setScannerActive] = useState(false);
   const [scannerError, setScannerError] = useState('');
+  const [scannerStatus, setScannerStatus] = useState('');
   const scannerRef = useRef(null);
   const html5QrCodeRef = useRef(null);
 
@@ -28,16 +29,33 @@ function MemberList() {
     if (!scannerRef.current) return;
 
     setScannerError('');
+    setScannerStatus('Memeriksa perangkat kamera...');
     setScannerActive(true);
 
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Browser ini belum mendukung akses kamera. Coba gunakan Chrome/Edge terbaru.');
+      }
+
       const html5QrCode = new Html5Qrcode('member-list-scanner');
       html5QrCodeRef.current = html5QrCode;
 
+      const cameras = await Html5Qrcode.getCameras();
+      if (!cameras || cameras.length === 0) {
+        throw new Error('Tidak ada kamera terdeteksi. Pastikan kamera terpasang dan browser memiliki izin akses.');
+      }
+
+      const preferredCamera = cameras.find((camera) =>
+        /back|environment|rear/i.test(camera.label)
+      ) || cameras.find((camera) => /front|user|face/i.test(camera.label)) || cameras[0];
+
+      setScannerStatus(`Menggunakan kamera: ${preferredCamera.label || preferredCamera.id}`);
+
       await html5QrCode.start(
-        { facingMode: 'environment' },
+        preferredCamera.id,
         { fps: 10, qrbox: { width: 240, height: 240 } },
         (decodedText) => {
+          setScannerStatus('QR berhasil dipindai. Memproses...');
           try {
             const url = new URL(decodedText);
             const scannedId = url.searchParams.get('id') || decodedText;
@@ -56,8 +74,10 @@ function MemberList() {
         },
         () => {}
       );
-    } catch {
-      setScannerError('Tidak bisa mengakses kamera. Pastikan izin kamera sudah aktif.');
+    } catch (err) {
+      const message = err?.message || 'Tidak bisa mengakses kamera. Pastikan izin kamera sudah aktif, situs diakses melalui localhost/https, dan laptop memiliki kamera yang tersedia.';
+      setScannerError(message);
+      setScannerStatus('');
       setScannerActive(false);
     }
   };
@@ -158,6 +178,9 @@ function MemberList() {
         {scannerActive ? (
           <div ref={scannerRef} className="mt-3 overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700">
             <div id="member-list-scanner" className="min-h-[240px] w-full bg-black" />
+            {scannerStatus && (
+              <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">{scannerStatus}</p>
+            )}
           </div>
         ) : (
           <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Gunakan kamera untuk memindai QR member dari halaman ini.</p>
