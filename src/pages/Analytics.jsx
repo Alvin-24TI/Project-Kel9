@@ -212,6 +212,37 @@ function Analytics() {
             </div>
           </div>
 
+          {/* Analytics Charts */}
+          <div className="grid grid-cols-12 gap-6 mt-6">
+            <div className="col-span-12 lg:col-span-8 bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="px-5 pt-5">
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Grafik Pendapatan</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Tren pendapatan berdasarkan transaksi terbaru.</p>
+              </div>
+              <div className="h-80">
+                {transactionChartData.labels?.length > 0 ? (
+                  <LineChart02 data={transactionChartData} width={640} height={320} />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400">Belum ada data transaksi.</div>
+                )}
+              </div>
+            </div>
+
+            <div className="col-span-12 lg:col-span-4 bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="px-5 pt-5">
+                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Top Member</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Poin terbanyak dari member aktif.</p>
+              </div>
+              <div className="h-80">
+                {memberChartData.labels?.length > 0 ? (
+                  <BarChart01 data={memberChartData} width={320} height={320} />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-400">Belum ada data member.</div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* History Cards */}
           <div className="grid grid-cols-12 gap-6 mt-6">
             <DashboardCardHistoryTransaksi items={recentTransactions} className="col-span-12 lg:col-span-6" />
