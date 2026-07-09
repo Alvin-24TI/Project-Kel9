@@ -135,6 +135,19 @@ function Sidebar({ sidebarOpen, setSidebarOpen, variant = "default" }) {
 
              
 
+              {/* Menu Manajemen Notifikasi */}
+              <li>
+                <NavLink
+                  to="/notification-management"
+                  className={({ isActive }) => linkClasses(isActive)}
+                >
+                  <svg className="shrink-0 fill-current w-4 h-4 mr-3" viewBox="0 0 16 16">
+                    <path d="M8 1a3 3 0 0 0-3 3v1.1A4.5 4.5 0 0 1 4.2 7.4L3.5 8.5A1 1 0 0 0 4.4 10h7.2a1 1 0 0 0 .9-1.5l-.7-1.1A4.5 4.5 0 0 1 11 5.1V4a3 3 0 0 0-3-3Zm0 12a2 2 0 0 0 1.8-1H6.2A2 2 0 0 0 8 13Z" />
+                  </svg>
+                  <span className="text-sm font-medium">Manajemen Notifikasi</span>
+                </NavLink>
+              </li>
+
               {/* Menu Promo Membership */}
               <li>
                 <NavLink
